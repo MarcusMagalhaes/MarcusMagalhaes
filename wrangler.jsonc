@@ -14,11 +14,10 @@
     "run_worker_first": ["/api/*"]
   },
   "keep_vars": true,
-  // domínio próprio (zona finanway.com.br na mesma conta do Cloudflare): o deploy cria o DNS e o certificado.
-  // www redireciona para o domínio principal (worker/index.ts). O endereço *.workers.dev continua de reserva.
-  "routes": [
-    { "pattern": "finanway.com.br", "custom_domain": true },
-    { "pattern": "www.finanway.com.br", "custom_domain": true }
-  ],
+  // domínio próprio: só depois que a zona finanway.com.br estiver na MESMA conta do Cloudflare (Websites › Add a domain,
+  // DNS do Registro.br apontando para o Cloudflare) e o token de API tiver Zone Read + DNS Edit + Workers Routes Edit;
+  // sem isso o deploy falha com "Can't infer zone from route". Então descomentar (o deploy cria o DNS e o certificado;
+  // www redireciona para o domínio principal em worker/index.ts):
+  //   "routes": [{ "pattern": "finanway.com.br", "custom_domain": true }, { "pattern": "www.finanway.com.br", "custom_domain": true }],
   "workers_dev": true
 }
