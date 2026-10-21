@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { supabase, ok } from '@/lib/supabase'
-import { listarCentros, listarContas, listarParceiros, listarPlano, rpc, todas, type ParceiroLista } from '@/lib/dados'
+import { listarContas, listarParceiros, listarPlano, rpc, todas, type ParceiroLista } from '@/lib/dados'
 import { fmtData, fmtMoeda, fmtValor, hojeISO, limitesDoMes, mascaraMoeda, mesAtual, normalizar, parsePreco, somar, somarDias } from '@/lib/format'
 import { cabecalhoImpressao, escHtml, imprimirHtml } from '@/lib/imprimir'
 import { baixarCsv } from '@/lib/csv'
@@ -15,7 +15,7 @@ import { descricaoParcela, gerarParcelas, REPETICOES, type Repeticao } from '@/l
 import { fmtDocumento } from '@/lib/documento'
 import {
   COLUNAS_TITULO, FORMAS_PAGAMENTO, SITUACOES_TITULO, ehFinanceiro, ehOperador, soColunas,
-  type Anexo, type CentroCusto, type ContaFinanceira, type FormaPagamento, type Lancamento, type PlanoConta, type SituacaoTitulo, type Titulo, type TipoTitulo,
+  type Anexo, type ContaFinanceira, type FormaPagamento, type Lancamento, type PlanoConta, type SituacaoTitulo, type Titulo, type TipoTitulo,
 } from '@/lib/types'
 import { BotaoAtualizar, Campo, Carregando, Chip, Confirmar, Modal, Opcoes, Progresso, Titulo as TituloTela, useToast, Vazio } from '@/components/ui'
 import ComboParceiro from '@/components/ComboParceiro'
@@ -30,7 +30,7 @@ const FILTROS: Record<Filtro, string> = { ABERTOS: 'Em aberto', VENCIDOS: 'Venci
 const COR_SITUACAO: Record<SituacaoTitulo, 'azul' | 'amarelo' | 'verde' | 'cinza'> = { ABERTO: 'azul', PARCIAL: 'amarelo', PAGO: 'verde', CANCELADO: 'cinza' }
 const aberto = (t: Titulo) => t.situacao === 'ABERTO' || t.situacao === 'PARCIAL'
 
-interface Cadastros { planos: PlanoConta[]; centros: CentroCusto[]; contas: ContaFinanceira[]; parceiros: ParceiroLista[] }
+interface Cadastros { planos: PlanoConta[]; contas: ContaFinanceira[]; parceiros: ParceiroLista[] }
 
 export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
   const empresa = useDadosEmpresa()
@@ -41,13 +41,12 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
   const nome = pagar ? 'Contas a pagar' : 'Contas a receber'
   const [lista, setLista] = useState<Titulo[] | null>(null)
   const [abertos, setAbertos] = useState<Titulo[]>([])
-  const [cad, setCad] = useState<Cadastros>({ planos: [], centros: [], contas: [], parceiros: [] })
+  const [cad, setCad] = useState<Cadastros>({ planos: [], contas: [], parceiros: [] })
   const [filtro, setFiltro] = useState<Filtro>('ABERTOS')
   const [de, setDe] = useState('')
   const [ate, setAte] = useState('')
   const [texto, setTexto] = useState('')
   const [planoF, setPlanoF] = useState('')
-  const [centroF, setCentroF] = useState('')
   // ?parceiro=<id>: lista já filtrada por um cliente/fornecedor (link da tela Clientes e fornecedores)
   const [parceiroF, setParceiroF] = useState<number | null>(Number(params.get('parceiro')) || null)
   const [edit, setEdit] = useState<Partial<Titulo> | null>(null)
@@ -79,8 +78,8 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
       setAbertos(filtro === 'ABERTOS' && !de && !ate ? l : await todas<Titulo>((a, b) => supabase.from('v_titulo').select('*').eq('tipo', tipo).in('situacao', ['ABERTO', 'PARCIAL']).order('vencimento').order('id').range(a, b)))
     } catch (e: any) { toast(e.message, 'erro'); setLista([]) }
   }
-  const carregarCadastros = () => Promise.all([listarPlano(false), listarCentros(false), listarContas(false), listarParceiros()])
-    .then(([planos, centros, contas, parceiros]) => setCad({ planos, centros, contas, parceiros })).catch((e) => toast(e.message, 'erro'))
+  const carregarCadastros = () => Promise.all([listarPlano(false), listarContas(false), listarParceiros()])
+    .then(([planos, contas, parceiros]) => setCad({ planos, contas, parceiros })).catch((e) => toast(e.message, 'erro'))
   useEffect(() => { carregar() }, [tipo, filtro, de, ate])
   useEffect(() => { carregarCadastros() }, [])
   useEffect(() => { const p = Number(params.get('parceiro')) || null; if (p) setParceiroF(p) }, [params])
@@ -100,10 +99,9 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
     const t = normalizar(texto.trim())
     const plano = cad.planos.find((c) => String(c.id) === planoF)
     return (lista ?? []).filter((x) => (!plano || (x.plano_codigo != null && contemCodigo(plano, x.plano_codigo)))
-      && (!centroF || String(x.centro_custo_id ?? '') === centroF)
       && (!parceiroF || x.parceiro_id === parceiroF)
       && (!t || normalizar(`${x.descricao} ${x.parceiro ?? ''} ${x.documento ?? ''} ${x.parceiro_documento ?? ''}`).includes(t)))
-  }, [lista, cad.planos, texto, planoF, centroF, parceiroF])
+  }, [lista, cad.planos, texto, planoF, parceiroF])
   const cartoes = useMemo(() => {
     const base = parceiroF ? abertos.filter((t) => t.parceiro_id === parceiroF) : abertos
     const s = (f: (t: Titulo) => boolean) => { const l = base.filter(f); return { valor: somar(l.map((t) => t.saldo)), qtd: l.length } }
@@ -118,12 +116,12 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
   function imprimir() {
     const linhas = visiveis.map((t) => `<tr><td>${fmtData(t.vencimento)}</td><td>${escHtml(descricaoParcela(t.descricao, t.parcela, t.parcelas))}</td><td>${escHtml(t.parceiro)}</td><td>${escHtml(t.plano)}</td><td>${escHtml(t.documento)}</td><td class="num">${fmtValor(t.valor)}</td><td class="num">${fmtValor(t.valor_pago)}</td><td class="num">${fmtValor(t.saldo)}</td><td>${escHtml(t.vencido ? `Vencido ${t.dias_atraso}d` : SITUACOES_TITULO[t.situacao])}</td></tr>`).join('')
     imprimirHtml(nome, `${cabecalhoImpressao(nomeDaEmpresa(empresa), nome, [FILTROS[filtro], periodoTexto, nomeParceiroF].filter(Boolean).join(' · '))}
-      <table class="tabela"><thead><tr><th>Vencimento</th><th>Descrição</th><th>${pagar ? 'Fornecedor' : 'Cliente'}</th><th>Conta do plano</th><th>Documento</th><th class="num">Valor</th><th class="num">${pagar ? 'Pago' : 'Recebido'}</th><th class="num">Saldo</th><th>Situação</th></tr></thead>
+      <table class="tabela"><thead><tr><th>Vencimento</th><th>Descrição</th><th>${pagar ? 'Fornecedor' : 'Cliente'}</th><th>Centro de custo</th><th>Documento</th><th class="num">Valor</th><th class="num">${pagar ? 'Pago' : 'Recebido'}</th><th class="num">Saldo</th><th>Situação</th></tr></thead>
       <tbody class="zebra">${linhas}</tbody><tfoot><tr><td colspan="5">${visiveis.length} título(s)</td><td class="num">${fmtValor(somar(visiveis.map((t) => t.valor)))}</td><td class="num">${fmtValor(somar(visiveis.map((t) => t.valor_pago)))}</td><td class="num">${fmtValor(somar(visiveis.map((t) => t.saldo)))}</td><td></td></tr></tfoot></table>`, 'landscape')
   }
   function exportar() {
-    baixarCsv(`${pagar ? 'contas-a-pagar' : 'contas-a-receber'}-${hoje}`, ['Vencimento', 'Competência', 'Descrição', 'Parcela', pagar ? 'Fornecedor' : 'Cliente', 'CPF/CNPJ', 'Grupo', 'Conta do plano', 'Centro de custo', 'Documento', 'Emissão', 'Valor', pagar ? 'Pago' : 'Recebido', 'Saldo', 'Situação', 'Pago em', 'Dias de atraso'],
-      visiveis.map((t) => [fmtData(t.vencimento), t.competencia.slice(0, 7), t.descricao, t.parcelas ? `${t.parcela}/${t.parcelas}` : '', t.parceiro, fmtDocumento(t.parceiro_documento), t.plano_raiz, t.plano, t.centro_custo,
+    baixarCsv(`${pagar ? 'contas-a-pagar' : 'contas-a-receber'}-${hoje}`, ['Vencimento', 'Competência', 'Descrição', 'Parcela', pagar ? 'Fornecedor' : 'Cliente', 'CPF/CNPJ', 'Centro pai', 'Centro de custo', 'Documento', 'Emissão', 'Valor', pagar ? 'Pago' : 'Recebido', 'Saldo', 'Situação', 'Pago em', 'Dias de atraso'],
+      visiveis.map((t) => [fmtData(t.vencimento), t.competencia.slice(0, 7), t.descricao, t.parcelas ? `${t.parcela}/${t.parcelas}` : '', t.parceiro, fmtDocumento(t.parceiro_documento), t.plano_raiz, t.plano,
         t.documento, fmtData(t.emissao), t.valor, t.valor_pago, t.saldo, SITUACOES_TITULO[t.situacao], fmtData(t.pago_em), t.dias_atraso || '']))
   }
 
@@ -146,18 +144,11 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
         </div>
         <Campo label={filtro === 'QUITADOS' ? 'Pago de' : 'Vence de'}><input className="input" type="date" value={de} onChange={(e) => setDe(e.target.value)} /></Campo>
         <Campo label="até"><input className="input" type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></Campo>
-        <Campo label="Conta do plano">
-          <select className="input" value={planoF} onChange={(e) => setPlanoF(e.target.value)}>
+        <Campo label="Centro de custo">
+          <select className="input" value={planoF} onChange={(e) => setPlanoF(e.target.value)} title="Centro de custo (o pai inclui os filhos)">
             <option value="">Todas</option>{cad.planos.filter((c) => c.tipo === movimentoDoTitulo(tipo)).map((c) => <option key={c.id} value={c.id}>{'  '.repeat(c.nivel - 1)}{c.nome}</option>)}
           </select>
         </Campo>
-        {cad.centros.length > 0 && (
-          <Campo label="Centro">
-            <select className="input" value={centroF} onChange={(e) => setCentroF(e.target.value)}>
-              <option value="">Todos</option>{cad.centros.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-            </select>
-          </Campo>
-        )}
         <Campo label="Buscar"><input className="input" type="text" placeholder={`descrição, ${pagar ? 'fornecedor' : 'cliente'}, documento…`} value={texto} onChange={(e) => setTexto(e.target.value)} /></Campo>
         {parceiroF && (
           <button type="button" className="chip bg-laranja-100 text-laranja-800" title="Limpar o filtro" onClick={limparParceiro}>
@@ -183,7 +174,7 @@ export default function Titulos({ tipo }: { tipo: TipoTitulo }) {
             <thead><tr>
               {podeEscrever && <th className="w-6"><input type="checkbox" title="Selecionar os em aberto" checked={selecionaveis.length > 0 && marcadosLista.length === selecionaveis.length}
                 onChange={(e) => setMarcados(e.target.checked ? new Set(selecionaveis.map((t) => t.id)) : new Set())} /></th>}
-              <th>Vencimento</th><th>Descrição</th><th>{pagar ? 'Fornecedor' : 'Cliente'}</th><th>Conta do plano</th><th>Documento</th><th className="num">Valor</th><th className="num">{pagar ? 'Pago' : 'Recebido'}</th><th className="num">Saldo</th><th>Situação</th>
+              <th>Vencimento</th><th>Descrição</th><th>{pagar ? 'Fornecedor' : 'Cliente'}</th><th>Centro de custo</th><th>Documento</th><th className="num">Valor</th><th className="num">{pagar ? 'Pago' : 'Recebido'}</th><th className="num">Saldo</th><th>Situação</th>
             </tr></thead>
             <tbody>
               {visiveis.map((t) => (
@@ -297,7 +288,7 @@ function FormTitulo({ inicial, tipo, cad, onCadastros, onBaixar, onFechar }: {
     if (!t.descricao?.trim()) { toast('Informe a descrição', 'erro'); return }
     if (!t.vencimento) { toast('Informe o vencimento', 'erro'); return }
     if (!valor || valor <= 0) { toast('Informe o valor', 'erro'); return }
-    if (!t.plano_conta_id) { toast('Escolha a conta do plano', 'erro'); return }
+    if (!t.plano_conta_id) { toast('Escolha o centro de custo', 'erro'); return }
     if (existente && valor < pago) { toast(`O valor não pode ficar menor que o já ${pagar ? 'pago' : 'recebido'} (${fmtMoeda(pago)})`, 'erro'); return }
     setSalvando(true)
     try {
@@ -380,19 +371,14 @@ function FormTitulo({ inicial, tipo, cad, onCadastros, onBaixar, onFechar }: {
           <Campo label="Vencimento"><input className="input" type="date" disabled={!editavel} value={t.vencimento ?? ''} onChange={(e) => mudarVencimento(e.target.value)} /></Campo>
           <Campo label="Competência (mês da DRE)"><input className="input" type="month" disabled={!editavel} value={competencia} onChange={(e) => { if (e.target.value) { setCompetencia(e.target.value); setCompManual(true) } }} /></Campo>
           <Campo label="Emissão"><input className="input" type="date" disabled={!editavel} value={t.emissao ?? ''} onChange={(e) => setT({ ...t, emissao: e.target.value || null })} /></Campo>
-          <Campo label="Conta do plano" className="sm:col-span-2">
+          <Campo label={`Centro de custo (${pagar ? 'saída' : 'entrada'})`} className="sm:col-span-3">
             <div className="flex gap-1">
               <select className="input" disabled={!editavel} value={t.plano_conta_id ?? ''} onChange={(e) => setT({ ...t, plano_conta_id: e.target.value ? Number(e.target.value) : undefined })}>
                 <option value="">— escolha —</option>
                 <OpcoesPlano planos={cad.planos} filtro={(c) => c.tipo === mov} atual={t.plano_conta_id} />
               </select>
-              {editavel && ehFinanceiro(perfil) && <button type="button" className="btn-secondary px-2" title="Nova conta no plano" onClick={() => setNovoPlano(true)}>+</button>}
+              {editavel && ehFinanceiro(perfil) && <button type="button" className="btn-secondary px-2" title="Novo centro de custo" onClick={() => setNovoPlano(true)}>+</button>}
             </div>
-          </Campo>
-          <Campo label="Centro de custo">
-            <select className="input" disabled={!editavel} value={t.centro_custo_id ?? ''} onChange={(e) => setT({ ...t, centro_custo_id: e.target.value ? Number(e.target.value) : null })}>
-              <option value="">—</option>{cad.centros.filter((c) => c.ativo || c.id === t.centro_custo_id).map((c) => <option key={c.id} value={c.id}>{c.codigo ? `${c.codigo} · ` : ''}{c.nome}</option>)}
-            </select>
           </Campo>
           <Campo label="Documento (NF, boleto)"><input className="input" disabled={!editavel} value={t.documento ?? ''} onChange={(e) => setT({ ...t, documento: e.target.value })} /></Campo>
           <Campo label={`Conta prevista para ${pagar ? 'pagar' : 'receber'}`} className="sm:col-span-2">

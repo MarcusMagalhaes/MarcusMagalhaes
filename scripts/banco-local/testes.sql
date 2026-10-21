@@ -281,7 +281,36 @@ select teste.erro(format($$insert into storage.objects (bucket_id, name) values 
 reset role;
 
 -- ---------------------------------------------------------------------
--- 10. Auditoria: alteração grava só o que mudou
+-- 10. Centro de custo (0007): a árvore define entrada/saída; o cadastro antigo fica vazio; modelos de lançamento
+-- ---------------------------------------------------------------------
+select teste.ok((select count(*) from centro_custo) = 0, 'criar_empresa não cria o centro de custo antigo');
+select teste.como('a@alfa.com');
+set role authenticated;
+select teste.erro($$insert into lancamento (data, tipo, plano_conta_id, conta_id, valor) values ('2026-10-21', 'ENTRADA', (select id from plano_conta where nome = 'Receitas operacionais' limit 1), (select min(id) from conta_financeira), 1)$$, 'agrupa outros centros de custo');
+select teste.erro($$insert into lancamento (data, tipo, plano_conta_id, conta_id, valor, centro_custo_id) values ('2026-10-21', 'SAIDA', (select id from plano_conta where nome = 'Energia elétrica'), (select min(id) from conta_financeira), 1, 1)$$, 'lancamento_sem_centro_antigo');
+select teste.erro($$insert into centro_custo (codigo, nome) values ('02', 'Filial')$$, 'permission denied');
+select teste.erro($$insert into lancamento (data, tipo, plano_conta_id, conta_id, valor) values ('2026-10-21', 'SAIDA', (select id from plano_conta where nome = 'Venda de produtos'), (select min(id) from conta_financeira), 1)$$, 'é de entrada, mas o lançamento é de saída');
+insert into modelo_lancamento (nome, blocos) values ('Controle mensal', jsonb_build_array(
+  jsonb_build_object('titulo', 'Saídas - Despesas operacionais', 'cor', 'laranja', 'centros', jsonb_build_array((select id from plano_conta where nome = 'Despesas operacionais')))));
+select teste.erro($$insert into modelo_lancamento (nome) values ('  controle MENSAL ')$$, 'ux_modelo_lancamento_nome');
+select teste.erro($$insert into modelo_lancamento (nome, blocos) values ('X', '{}')$$, 'check');
+reset role;
+select teste.como('b@alfa.com');
+set role authenticated;
+select teste.ok((select count(*) from modelo_lancamento) = 1, 'auxiliar vê os modelos da empresa');
+select teste.erro($$insert into modelo_lancamento (nome) values ('Meu modelo')$$, 'row-level security');
+update modelo_lancamento set nome = 'Trocado';
+select teste.ok((select nome from modelo_lancamento) = 'Controle mensal', 'auxiliar não altera modelo');
+reset role;
+select teste.como('d@beta.com');
+set role authenticated;
+select teste.ok((select count(*) from modelo_lancamento) = 0, 'Beta não vê os modelos da Alfa');
+select teste.erro(format($$insert into modelo_lancamento (empresa_id, nome) values (%s, 'Invasor')$$, current_setting('teste.empresa_alfa')), 'row-level security');
+reset role;
+select teste.ok((select count(*) from auditoria where tabela = 'modelo_lancamento') = 1, 'modelo auditado');
+
+-- ---------------------------------------------------------------------
+-- 11. Auditoria: alteração grava só o que mudou
 -- ---------------------------------------------------------------------
 select teste.ok((select campos_alterados = array['descricao'] from auditoria where tabela = 'lancamento' and operacao = 'UPDATE' and depois->>'descricao' = 'Aluguel out/2026'), 'auditoria enxuta na alteração');
 select teste.ok((select usuario_email from auditoria where tabela = 'titulo' and operacao = 'INSERT' order by id limit 1) = 'a@alfa.com', 'auditoria guarda quem fez');

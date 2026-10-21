@@ -12,7 +12,7 @@ const lista = [
   c(5, 2010100, 3, 4, 'Aluguel loja'),
 ]
 
-describe('plano de contas', () => {
+describe('centros de custo', () => {
   it('formata o código', () => {
     expect(fmtCodigoPlano(1010000)).toBe('01.01.00.00')
     expect(fmtCodigoCurto(1010000)).toBe('01.01')

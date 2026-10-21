@@ -1,4 +1,4 @@
-// Orçamento (0003/0004): previsão por conta do plano (2º nível para baixo) e mês. Edita na grade, gera a partir do
+// Orçamento (0003/0004): previsão por centro de custo (2º nível para baixo) e mês. Edita na grade, gera a partir do
 // realizado de um ano-base com reajuste (IPCA do Banco Central como sugestão) e compara previsto × realizado (caixa).
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { supabase, ok } from '@/lib/supabase'
@@ -139,23 +139,23 @@ export default function Orcamento() {
         `<tr><td style="font-weight:700">${escHtml(g.raiz.nome)}</td>${MESES_N.map((m) => `<td class="num" style="font-weight:700">${fmtValor(somaGrupo(g, m))}</td>`).join('')}<td class="num" style="font-weight:700">${fmtValor(somaGrupo(g))}</td></tr>`
         + g.contas.map((c) => `<tr><td style="padding-left:12px">${fmtCodigoCurto(c.codigo)} ${escHtml(c.nome)}</td>${MESES_N.map((m) => `<td class="num">${v(c.id, m) ? fmtValor(v(c.id, m)) : ''}</td>`).join('')}<td class="num">${fmtValor(totalConta(c.id))}</td></tr>`).join('')).join('')
         + `<tr><td style="font-weight:800">Total ${rot.toLowerCase()}</td>${MESES_N.map((m) => `<td class="num" style="font-weight:800">${fmtValor(somaTipo(t, m))}</td>`).join('')}<td class="num" style="font-weight:800">${fmtValor(somaTipo(t))}</td></tr>`
-      corpo = `<table class="tabela"><thead><tr><th>Conta do plano</th>${MESES_CURTOS.map((m) => `<th class="num">${m}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${tipo('ENTRADA', 'Entradas')}${tipo('SAIDA', 'Saídas')}
+      corpo = `<table class="tabela"><thead><tr><th>Centro de custo</th>${MESES_CURTOS.map((m) => `<th class="num">${m}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${tipo('ENTRADA', 'Entradas')}${tipo('SAIDA', 'Saídas')}
         <tr><td style="font-weight:800">Resultado previsto</td>${MESES_N.map((m) => `<td class="num" style="font-weight:800">${fmtValor(somaTipo('ENTRADA', m) - somaTipo('SAIDA', m))}</td>`).join('')}<td class="num" style="font-weight:800">${fmtValor(somaTipo('ENTRADA') - somaTipo('SAIDA'))}</td></tr></tbody></table>`
     } else {
       const tipo = (t: TipoMovimento, rot: string) => `<tr><td colspan="5" style="font-weight:800;background:#eceff2">${rot}</td></tr>` + cmp[t].map((g) =>
         `<tr><td style="font-weight:700">${escHtml(g.raiz)}</td><td class="num">${fmtValor(g.previsto)}</td><td class="num">${fmtValor(g.realizado)}</td><td class="num">${fmtValor(g.realizado - g.previsto)}</td><td class="num">${g.previsto ? fmtPct(g.realizado / g.previsto) : '—'}</td></tr>`
         + g.itens.map((i) => `<tr><td style="padding-left:12px">${fmtCodigoCurto(i.l.codigo)} ${escHtml(i.l.plano)}</td><td class="num">${fmtValor(i.previsto)}</td><td class="num">${fmtValor(i.realizado)}</td><td class="num">${fmtValor(i.realizado - i.previsto)}</td><td class="num">${i.previsto ? fmtPct(i.realizado / i.previsto) : '—'}</td></tr>`).join('')).join('')
-      corpo = `<table class="tabela"><thead><tr><th>Conta do plano</th><th class="num">Previsto</th><th class="num">Realizado</th><th class="num">Diferença</th><th class="num">Execução</th></tr></thead><tbody>${tipo('ENTRADA', 'Entradas')}${tipo('SAIDA', 'Saídas')}</tbody></table>`
+      corpo = `<table class="tabela"><thead><tr><th>Centro de custo</th><th class="num">Previsto</th><th class="num">Realizado</th><th class="num">Diferença</th><th class="num">Execução</th></tr></thead><tbody>${tipo('ENTRADA', 'Entradas')}${tipo('SAIDA', 'Saídas')}</tbody></table>`
     }
     imprimirHtml(tit, `${cabecalhoImpressao(nomeDaEmpresa(dadosEmpresa), tit, param ? `Gerado do realizado de ${param.ano_base} com reajuste de ${fmtValor(param.reajuste_pct)}%${param.fonte_reajuste ? ` (${param.fonte_reajuste})` : ''}` : undefined)}${corpo}`, visao === 'previsto' ? 'landscape' : 'portrait')
   }
   function csv() {
     if (visao === 'previsto') {
       const linhas = (['ENTRADA', 'SAIDA'] as TipoMovimento[]).flatMap((t) => grade[t].flatMap((g) => g.contas.map((c) => [t === 'ENTRADA' ? 'Entrada' : 'Saída', g.raiz.nome, fmtCodigoCurto(c.codigo), c.nome, ...MESES_N.map((m) => v(c.id, m)), totalConta(c.id)])))
-      baixarCsv(`orcamento-${ano}`, ['Tipo', 'Grupo', 'Código', 'Conta do plano', ...MESES_CURTOS, 'Total'], linhas)
+      baixarCsv(`orcamento-${ano}`, ['Tipo', 'Centro pai', 'Código', 'Centro de custo', ...MESES_CURTOS, 'Total'], linhas)
     } else {
       const linhas = (['ENTRADA', 'SAIDA'] as TipoMovimento[]).flatMap((t) => cmp[t].flatMap((g) => g.itens.map((i) => [t === 'ENTRADA' ? 'Entrada' : 'Saída', g.raiz, fmtCodigoCurto(i.l.codigo), i.l.plano, i.previsto, i.realizado, i.realizado - i.previsto, i.previsto ? Math.round((i.realizado / i.previsto) * 1000) / 10 : ''])))
-      baixarCsv(`orcamento-${ano}-previsto-x-realizado`, ['Tipo', 'Grupo', 'Código', 'Conta do plano', 'Previsto', 'Realizado', 'Diferença', 'Execução %'], linhas)
+      baixarCsv(`orcamento-${ano}-previsto-x-realizado`, ['Tipo', 'Centro pai', 'Código', 'Centro de custo', 'Previsto', 'Realizado', 'Diferença', 'Execução %'], linhas)
     }
   }
 
@@ -241,7 +241,7 @@ export default function Orcamento() {
         <div className="card flex-1 min-h-0 overflow-auto">
           {grade.ENTRADA.length + grade.SAIDA.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">Nenhum orçamento para {ano}.{pode ? ' Digite os valores na grade (marque "todas as contas") ou gere a partir de um ano-base.' : ''}</div> : (
             <table className="tabela">
-              <thead><tr><th className="min-w-[14rem]">Conta do plano</th>{MESES_CURTOS.map((m) => <th key={m} className="num">{m}</th>)}<th className="num">Total</th><th></th></tr></thead>
+              <thead><tr><th className="min-w-[14rem]">Centro de custo</th>{MESES_CURTOS.map((m) => <th key={m} className="num">{m}</th>)}<th className="num">Total</th><th></th></tr></thead>
               <tbody>
                 {blocoTipo('ENTRADA', 'Entradas')}
                 {blocoTipo('SAIDA', 'Saídas')}
@@ -255,7 +255,7 @@ export default function Orcamento() {
         <div className="card flex-1 min-h-0 overflow-auto">
           {cmp.ENTRADA.length + cmp.SAIDA.length === 0 ? <div className="p-6 text-center text-sm text-slate-500">Nenhum orçamento para {ano}.</div> : (
             <table className="tabela">
-              <thead><tr><th>Conta do plano</th><th className="num">Previsto</th><th className="num">Realizado</th><th className="num">Diferença</th><th className="num">Execução</th></tr></thead>
+              <thead><tr><th>Centro de custo</th><th className="num">Previsto</th><th className="num">Realizado</th><th className="num">Diferença</th><th className="num">Execução</th></tr></thead>
               <tbody>{blocoCmp('ENTRADA', 'Entradas')}{blocoCmp('SAIDA', 'Saídas')}</tbody>
               <tfoot>
                 {(['ENTRADA', 'SAIDA'] as TipoMovimento[]).map((t) => { const x = totCmp(t); return <tr key={t}><td>Total {t === 'ENTRADA' ? 'entradas' : 'saídas'}</td><td className="num">{fmtValor(x.p)}</td><td className="num">{fmtValor(x.r)}</td><td className="num">{fmtValor(x.r - x.p)}</td><td className={`num ${corExec(t, x.p, x.r)}`}>{x.p ? fmtPct(x.r / x.p) : '—'}</td></tr> })}

@@ -75,7 +75,7 @@ export default function Painel() {
     p.lancamentos_pendentes > 0 && { texto: `${p.lancamentos_pendentes} lançamento(s) do extrato aguardando classificação`, rota: '/financeiro/conciliacao', acao: 'Conciliar' },
     p.meses_sem_fechamento.length > 0 && { texto: `Mês(es) sem fechamento: ${p.meses_sem_fechamento.join(', ')}`, rota: '/financeiro/fechamento', acao: 'Fechar' },
     p.contas_sem_saldo_inicial > 0 && { texto: `${p.contas_sem_saldo_inicial} conta(s) movimentada(s) sem saldo inicial informado`, rota: '/cadastros/contas', acao: 'Informar' },
-    !p.configuracao_baixa && { texto: 'Contas do plano para juros e descontos na baixa de títulos não configuradas', rota: '/admin/empresa', acao: 'Configurar' },
+    !p.configuracao_baixa && { texto: 'Centros de custo para juros e descontos na baixa de títulos não configurados', rota: '/admin/empresa', acao: 'Configurar' },
   ].filter(Boolean) as { texto: string; rota: string; acao: string }[]
   const atraso = d.atraso_receber
   const orc = d.orcamento

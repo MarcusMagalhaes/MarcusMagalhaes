@@ -47,7 +47,7 @@ export default function EscolherEmpresa() {
   )
 }
 
-/** primeiro acesso do TI: cria a empresa (já com plano de contas padrão, Caixa, Conta corrente e centro "Geral") e entra nela */
+/** primeiro acesso do TI: cria a empresa (já com os centros de custo padrão, Caixa e Conta corrente) e entra nela */
 function PrimeiraEmpresa({ onCriada }: { onCriada: (id: number) => void }) {
   const [d, setD] = useState({ razao_social: '', nome_fantasia: '', cnpj: '', diretor_email: '' })
   const [msg, setMsg] = useState<string | null>(null)
@@ -68,7 +68,7 @@ function PrimeiraEmpresa({ onCriada }: { onCriada: (id: number) => void }) {
   )
   return (
     <div className="ficha mt-1 space-y-2">
-      <p className="text-sm text-slate-600">Ainda não há nenhuma empresa cadastrada. Crie a primeira: ela já vem com o plano de contas padrão, Caixa, Conta corrente e o centro de custo "Geral".</p>
+      <p className="text-sm text-slate-600">Ainda não há nenhuma empresa cadastrada. Crie a primeira: ela já vem com os centros de custo padrão (entradas e saídas, prontos para a DRE), Caixa e Conta corrente.</p>
       {campo('Razão social', 'razao_social', { autoFocus: 'true' })}
       {campo('Nome fantasia (aparece no menu)', 'nome_fantasia')}
       {campo('CNPJ (ou CPF)', 'cnpj', { inputMode: 'numeric' })}

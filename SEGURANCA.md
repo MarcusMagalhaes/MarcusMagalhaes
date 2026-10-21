@@ -13,7 +13,7 @@ internet a tem. Toda proteção dos dados fica no banco (RLS, permissões e chec
   nem altera a outra — testado em `scripts/banco-local/testes.sql` (§7).
 - **Gatilhos antes do RLS:** os gatilhos de regras rodam antes de o RLS conferir a linha nova; por isso começam com
   `confere_empresa(new.empresa_id)` — sem isso, uma linha com `empresa_id` de outra empresa faria o gatilho ler e citar
-  dados dela na mensagem de erro. Referências (conta, conta do plano, centro, cliente/fornecedor, título) precisam ser da
+  dados dela na mensagem de erro. Referências (conta, centro de custo, cliente/fornecedor, título) precisam ser da
   mesma empresa ("inexistente" sem revelar nomes).
 - **Papéis conferidos no banco:** `eh_leitor()` (todos), `eh_operador()` (todos menos CONTADOR), `eh_financeiro()`
   (exclusão, cadastros, orçamento, fechamento, estorno), `eh_admin()` (usuários, empresa, auditoria), `eh_diretor()`

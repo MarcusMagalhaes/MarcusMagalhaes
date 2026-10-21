@@ -1,14 +1,14 @@
-// DRE gerencial (função dre, 0004): totais por conta do plano e mês, montados pela estrutura da DRE (lib/planoContas)
+// DRE gerencial (função dre, 0004): totais por centro de custo e mês, montados pela estrutura da DRE (lib/planoContas)
 // em lib/relatorios.ts. Competência (títulos pela competência + lançamentos avulsos) ou caixa (lançamentos pela data).
 import { useEffect, useMemo, useState } from 'react'
-import { listarCentros, listarPlano, rpc } from '@/lib/dados'
+import { listarPlano, rpc } from '@/lib/dados'
 import { fmtData, fmtPct, fmtValor, hojeISO, mesCurto } from '@/lib/format'
 import { ATALHOS_PERIODO, mesesDoPeriodo, montarDre, periodoDoAtalho, receitaLiquida, type AtalhoPeriodo, type LinhaDreBanco, type LinhaDreMontada } from '@/lib/relatorios'
 import { fmtCodigoCurto } from '@/lib/planoContas'
 import { baixarCsv } from '@/lib/csv'
 import { cabecalhoImpressao, escHtml, imprimirHtml } from '@/lib/imprimir'
 import { nomeDaEmpresa, useDadosEmpresa } from '@/lib/empresa'
-import type { CentroCusto, GrupoPlano, PlanoConta } from '@/lib/types'
+import type { GrupoPlano, PlanoConta } from '@/lib/types'
 import { BotaoAtualizar, Campo, Carregando, Titulo, useToast } from '@/components/ui'
 
 type Regime = 'COMPETENCIA' | 'CAIXA'
@@ -21,24 +21,21 @@ export default function Dre() {
   const [de, setDe] = useState(periodoDoAtalho('ANO', hojeISO()).de)
   const [ate, setAte] = useState(periodoDoAtalho('ANO', hojeISO()).ate)
   const [regime, setRegime] = useState<Regime>('COMPETENCIA')
-  const [centro, setCentro] = useState<string>('')   // '' todos · '0' sem centro · id
   const [mensal, setMensal] = useState(false)
   const [planos, setPlanos] = useState<PlanoConta[] | null>(null)
-  const [centros, setCentros] = useState<CentroCusto[]>([])
   const [linhasBanco, setLinhasBanco] = useState<LinhaDreBanco[] | null>(null)
   const [abertos, setAbertos] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     listarPlano(false).then(setPlanos).catch((e) => toast(e.message, 'erro'))
-    listarCentros(false).then(setCentros).catch(() => {})
   }, [])
   const carregar = () => {
     if (!de || !ate || ate < de) { toast('Período inválido', 'erro'); return }
     setLinhasBanco(null)
-    rpc<LinhaDreBanco[]>('dre', { p_de: de, p_ate: ate, p_regime: regime, p_centro_custo_id: centro === '' ? null : Number(centro) })
+    rpc<LinhaDreBanco[]>('dre', { p_de: de, p_ate: ate, p_regime: regime })
       .then(setLinhasBanco).catch((e) => { toast(e.message, 'erro'); setLinhasBanco([]) })
   }
-  useEffect(() => { carregar() }, [de, ate, regime, centro])
+  useEffect(() => { carregar() }, [de, ate, regime])
   function escolherAtalho(a: AtalhoPeriodo) {
     setAtalho(a)
     if (a !== 'PERSONALIZADO') { const p = periodoDoAtalho(a, hojeISO()); setDe(p.de); setAte(p.ate) }
@@ -51,9 +48,8 @@ export default function Dre() {
   const visiveis = (dre ?? []).filter((l) => l.tipo !== 'conta' || abertos.has(l.grupo as string))
   const rl = dre ? receitaLiquida(dre) : 0
   const colunasMes = mensal ? meses : []
-  const nomeCentro = centro === '' ? 'Todos os centros de custo' : centro === '0' ? 'Sem centro de custo' : centros.find((c) => String(c.id) === centro)?.nome ?? ''
   const titulo = `DRE gerencial · ${fmtData(de)} a ${fmtData(ate)}`
-  const detalhe = `Regime de ${REGIMES[regime].toLowerCase()} · ${nomeCentro}`
+  const detalhe = `Regime de ${REGIMES[regime].toLowerCase()}`
   const pct = (l: LinhaDreMontada) => (rl ? fmtPct(l.total / rl) : '—')
   const rotuloConta = (l: LinhaDreMontada) => `${l.conta ? fmtCodigoCurto(l.conta.codigo) + ' ' : ''}${l.rotulo}`
   const destaque = (l: LinhaDreMontada) => l.tipo === 'resultado' || l.tipo === 'caixa'
@@ -89,12 +85,6 @@ export default function Dre() {
         <div className="flex overflow-hidden rounded-md border border-slate-300" title="Competência: receitas e despesas no mês a que pertencem. Caixa: quando o dinheiro entrou ou saiu.">
           {(Object.keys(REGIMES) as Regime[]).map((k) => <button key={k} className={`px-2 py-1 font-semibold ${regime === k ? 'bg-grafite-900 text-white' : 'bg-white text-slate-600'}`} onClick={() => setRegime(k)}>{REGIMES[k]}</button>)}
         </div>
-        <Campo label="Centro de custo">
-          <select className="input" value={centro} onChange={(e) => setCentro(e.target.value)}>
-            <option value="">Todos</option><option value="0">Sem centro de custo</option>
-            {centros.map((c) => <option key={c.id} value={c.id}>{c.codigo ? `${c.codigo} · ` : ''}{c.nome}{c.ativo ? '' : ' (inativo)'}</option>)}
-          </select>
-        </Campo>
         <div className="flex overflow-hidden rounded-md border border-slate-300">
           <button className={`px-2 py-1 font-semibold ${!mensal ? 'bg-grafite-900 text-white' : 'bg-white text-slate-600'}`} onClick={() => setMensal(false)}>Total</button>
           <button className={`px-2 py-1 font-semibold ${mensal ? 'bg-grafite-900 text-white' : 'bg-white text-slate-600'}`} onClick={() => setMensal(true)}>Mês a mês</button>
@@ -134,7 +124,7 @@ export default function Dre() {
             {regime === 'COMPETENCIA'
               ? 'Competência: títulos a pagar e a receber (não cancelados) pelo mês de competência, mais os lançamentos avulsos e os juros/descontos das baixas.'
               : 'Caixa: lançamentos confirmados pela data em que o dinheiro entrou ou saiu.'}
-            {' '}Clique num grupo para ver as contas do plano. Aportes, investimentos e distribuição de lucros ficam fora da DRE e entram na geração de caixa.
+            {' '}Clique num grupo para ver os centros de custo. Aportes, investimentos e distribuição de lucros ficam fora da DRE e entram na geração de caixa.
           </p>
         </div>
       )}

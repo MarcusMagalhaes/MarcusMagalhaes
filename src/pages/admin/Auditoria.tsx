@@ -9,7 +9,7 @@ import { BotaoAtualizar, Campo, Carregando, Chip, Modal, Titulo, useToast, Vazio
 const MAX_AUDITORIA = 5000
 const NOME_TABELA: Record<string, string> = {
   empresa: 'Empresa', usuario: 'Contas de login', usuario_empresa: 'Acesso à empresa', liberacao_previa: 'Liberação de e-mail',
-  conta_financeira: 'Contas financeiras', plano_conta: 'Plano de contas', centro_custo: 'Centros de custo', parceiro: 'Clientes e fornecedores',
+  conta_financeira: 'Contas financeiras', plano_conta: 'Centros de custo', modelo_lancamento: 'Modelos de lançamento', parceiro: 'Clientes e fornecedores',
   titulo: 'Contas a pagar/receber', lancamento: 'Lançamentos', importacao_extrato: 'Importação de extrato', anexo: 'Documentos anexados',
   orcamento: 'Orçamento', orcamento_parametro: 'Parâmetros do orçamento', fechamento_mes: 'Fechamento do mês',
 }

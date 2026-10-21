@@ -1,5 +1,5 @@
 // Dados da empresa em uso que várias telas precisam sem buscar de novo: nome para impressões e cabeçalhos, CNPJ e a
-// configuração da baixa (contas do plano de juros e descontos). Carregado pelo auth ao entrar na empresa.
+// configuração da baixa (centros de custo de juros e descontos). Carregado pelo auth ao entrar na empresa.
 import { useSyncExternalStore } from 'react'
 import { supabase } from './supabase'
 import type { Empresa } from './types'

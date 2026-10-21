@@ -35,8 +35,7 @@ export function montarMenu(p: { papel: Papel } | null): Entrada[] {
     { grupo: 'Cadastros', icone: '🗃️', itens: [
       { to: '/cadastros/parceiros', label: 'Clientes e fornecedores', icone: '🤝' },
       { to: '/cadastros/contas', label: 'Contas financeiras', icone: '💳' },
-      { to: '/cadastros/plano-contas', label: 'Plano de contas', icone: '🏷️' },
-      { to: '/cadastros/centros-custo', label: 'Centros de custo', icone: '🧩' },
+      { to: '/cadastros/centros-custo', label: 'Centros de custo', icone: '🏷️' },
     ] },
   ]
   if (ehAdmin(p)) {

@@ -1,5 +1,5 @@
 // Baixa de um título (pagamento ou recebimento, total ou parcial): rpc baixar_titulo (0003). O principal abate o
-// título; juros/multa e desconto viram lançamentos à parte nas contas do plano de Empresa › Configuração.
+// título; juros/multa e desconto viram lançamentos à parte nos centros de custo de Empresa › Configuração.
 import { useState } from 'react'
 import { rpc } from '@/lib/dados'
 import { fmtData, fmtMoeda, fmtValor, hojeISO, mascaraMoeda, parsePreco, somar } from '@/lib/format'

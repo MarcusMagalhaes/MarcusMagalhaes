@@ -49,7 +49,7 @@ export interface Empresa {
   regime_tributario: RegimeTributario | null
   cep: string | null; endereco: string | null; numero: string | null; complemento: string | null; bairro: string | null; cidade: string | null; uf: string | null
   telefone: string | null; email: string | null; site: string | null; logo_caminho: string | null; ativa: boolean; criado_em: string
-  /** contas do plano usadas na baixa de títulos (0002): juros/multa e descontos */
+  /** centros de custo usados na baixa de títulos (0002): juros/multa e descontos */
   plano_juros_pagos_id: number | null; plano_juros_recebidos_id: number | null; plano_descontos_obtidos_id: number | null; plano_descontos_concedidos_id: number | null
 }
 export interface UsuarioEmpresa {
@@ -70,7 +70,7 @@ export interface ContaFinanceira {
 export interface SaldoConta { id: number; nome: string; tipo: TipoConta; ativa: boolean; saldo_inicial: number; data_saldo_inicial: string | null; limite: number | null; saldo: number }
 
 export type TipoMovimento = 'ENTRADA' | 'SAIDA'
-/** Classificação do 1º nível do plano de contas na DRE e no fluxo de caixa (herdada pelos filhos) */
+/** Classificação do 1º nível do centro de custo na DRE e no fluxo de caixa (herdada pelos filhos) */
 export type GrupoPlano = 'RECEITA_OPERACIONAL' | 'RECEITA_FINANCEIRA' | 'OUTRA_RECEITA' | 'APORTE_EMPRESTIMO'
   | 'DEDUCAO' | 'CUSTO' | 'DESPESA_OPERACIONAL' | 'DESPESA_FINANCEIRA' | 'IMPOSTO_LUCRO' | 'INVESTIMENTO' | 'DISTRIBUICAO_AMORTIZACAO'
 export const GRUPOS_PLANO: Record<GrupoPlano, string> = {
@@ -81,9 +81,16 @@ export const GRUPOS_PLANO: Record<GrupoPlano, string> = {
 }
 export const GRUPOS_ENTRADA: GrupoPlano[] = ['RECEITA_OPERACIONAL', 'RECEITA_FINANCEIRA', 'OUTRA_RECEITA', 'APORTE_EMPRESTIMO']
 export const GRUPOS_SAIDA: GrupoPlano[] = ['DEDUCAO', 'CUSTO', 'DESPESA_OPERACIONAL', 'DESPESA_FINANCEIRA', 'IMPOSTO_LUCRO', 'INVESTIMENTO', 'DISTRIBUICAO_AMORTIZACAO']
-/** Conta do plano de contas (0002): árvore de até 4 níveis, código de 8 dígitos gerado pelo banco */
+/**
+ * Centro de custo (0002/0007; tabela interna plano_conta, como categoria_financeira no Luminexus): árvore de até 4 níveis,
+ * código de 8 dígitos gerado pelo banco. O tipo (entrada/saída) e o grupo da DRE vêm do 1º nível.
+ */
 export interface PlanoConta { id: number; tipo: TipoMovimento; grupo: GrupoPlano; nome: string; descricao: string | null; codigo: number; nivel: number; pai_id: number | null; ordem: number; ativa: boolean }
-export interface CentroCusto { id: number; codigo: string | null; nome: string; descricao: string | null; ativo: boolean }
+
+/** Lançamento por modelo (0007, Luminexus 0121): quadro de blocos; cada bloco lista centros de custo (com os filhos) */
+export type CorBloco = 'verde' | 'laranja' | 'azul' | 'vermelho' | 'amarelo' | 'roxo' | 'cinza'
+export interface BlocoModelo { titulo: string; cor: CorBloco; centros: number[] }
+export interface ModeloLancamento { id: number; nome: string; blocos: BlocoModelo[] }
 
 export type TipoParceiro = 'CLIENTE' | 'FORNECEDOR' | 'AMBOS'
 export const TIPOS_PARCEIRO: Record<TipoParceiro, string> = { CLIENTE: 'Cliente', FORNECEDOR: 'Fornecedor', AMBOS: 'Cliente e fornecedor' }
@@ -103,7 +110,7 @@ export type TipoLancamento = 'ENTRADA' | 'SAIDA' | 'TRANSFERENCIA'
 export const TIPOS_LANCAMENTO: Record<TipoLancamento, string> = { ENTRADA: 'Entrada', SAIDA: 'Saída', TRANSFERENCIA: 'Transferência entre contas' }
 export type OrigemLancamento = 'APP' | 'BAIXA' | 'IMPORTACAO' | 'CARGA'
 export interface Lancamento {
-  id: number; data: string; competencia: string; tipo: TipoLancamento; plano_conta_id: number | null; centro_custo_id: number | null
+  id: number; data: string; competencia: string; tipo: TipoLancamento; plano_conta_id: number | null
   conta_id: number; conta_destino_id: number | null; valor: number; parceiro_id: number | null; forma: FormaPagamento | null
   descricao: string | null; documento: string | null; origem: OrigemLancamento
   /** PENDENTE = veio do extrato e aguarda classificação/conciliação (fora de saldos e relatórios) */
@@ -114,7 +121,7 @@ export interface Lancamento {
   criado_em?: string; atualizado_em?: string
   // só na view v_lancamento
   plano?: string | null; plano_codigo?: number | null; grupo?: GrupoPlano | null; plano_raiz?: string | null
-  centro_custo?: string | null; conta?: string | null; conta_destino?: string | null; parceiro?: string | null
+  conta?: string | null; conta_destino?: string | null; parceiro?: string | null
   titulo_tipo?: TipoTitulo | null; parcela?: number | null; parcelas?: number | null; anexos?: number
 }
 
@@ -122,7 +129,7 @@ export type TipoTitulo = 'PAGAR' | 'RECEBER'
 export type SituacaoTitulo = 'ABERTO' | 'PARCIAL' | 'PAGO' | 'CANCELADO'
 export const SITUACOES_TITULO: Record<SituacaoTitulo, string> = { ABERTO: 'Em aberto', PARCIAL: 'Pago em parte', PAGO: 'Quitado', CANCELADO: 'Cancelado' }
 export interface Titulo {
-  id: number; tipo: TipoTitulo; parceiro_id: number | null; plano_conta_id: number; centro_custo_id: number | null
+  id: number; tipo: TipoTitulo; parceiro_id: number | null; plano_conta_id: number
   descricao: string; documento: string | null; emissao: string | null; vencimento: string; competencia: string; valor: number
   parcela: number | null; parcelas: number | null; grupo_id: string | null; conta_prevista_id: number | null; forma_prevista: FormaPagamento | null
   codigo_barras: string | null; observacao: string | null; cancelado: boolean; cancelado_motivo: string | null
@@ -131,13 +138,13 @@ export interface Titulo {
   criado_em?: string; atualizado_em?: string
   // só na view v_titulo
   saldo?: number; vencido?: boolean; dias_atraso?: number; plano?: string | null; plano_codigo?: number | null; plano_raiz?: string | null
-  centro_custo?: string | null; parceiro?: string | null; parceiro_documento?: string | null; conta_prevista?: string | null; anexos?: number
+  parceiro?: string | null; parceiro_documento?: string | null; conta_prevista?: string | null; anexos?: number
 }
 /** colunas que a tela grava em titulo (o resto é calculado ou vem da view) */
-export const COLUNAS_TITULO = ['tipo', 'parceiro_id', 'plano_conta_id', 'centro_custo_id', 'descricao', 'documento', 'emissao', 'vencimento', 'competencia', 'valor',
+export const COLUNAS_TITULO = ['tipo', 'parceiro_id', 'plano_conta_id', 'descricao', 'documento', 'emissao', 'vencimento', 'competencia', 'valor',
   'parcela', 'parcelas', 'grupo_id', 'conta_prevista_id', 'forma_prevista', 'codigo_barras', 'observacao', 'cancelado', 'cancelado_motivo'] as const
 /** colunas que a tela grava em lancamento */
-export const COLUNAS_LANCAMENTO = ['data', 'competencia', 'tipo', 'plano_conta_id', 'centro_custo_id', 'conta_id', 'conta_destino_id', 'valor', 'parceiro_id',
+export const COLUNAS_LANCAMENTO = ['data', 'competencia', 'tipo', 'plano_conta_id', 'conta_id', 'conta_destino_id', 'valor', 'parceiro_id',
   'forma', 'descricao', 'documento', 'situacao'] as const
 /** só as colunas gravadas (tira os campos da view e os calculados) */
 export function soColunas<T extends object>(o: T, colunas: readonly string[]): Partial<T> {

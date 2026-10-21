@@ -1,6 +1,6 @@
 // Empresa em uso: dados cadastrais (com busca do CNPJ na Receita e do CEP), logo e a configuração da baixa de títulos
-// (contas do plano para juros/multa e descontos — 0003, baixar_titulo). O administrador TI vê também todas as empresas:
-// cria (criar_empresa já semeia plano de contas, caixa, conta corrente e centro "Geral" e libera o diretor), entra
+// (centros de custo para juros/multa e descontos — 0003, baixar_titulo). O administrador TI vê também todas as empresas:
+// cria (criar_empresa já semeia os centros de custo, caixa e conta corrente e libera o diretor), entra
 // numa delas, ativa e desativa.
 import { useEffect, useRef, useState } from 'react'
 import { supabase, ok } from '@/lib/supabase'
@@ -138,7 +138,7 @@ export default function EmpresaPagina() {
     setSalvando(true)
     try {
       const novoId = await rpc<number>('criar_empresa', { p_dados: { ...limpar(nova), diretor_email: email || null, diretor_nome: nova.diretor_nome?.trim() || null } })
-      toast('Empresa criada com o plano de contas padrão. Você já está nela.')
+      toast('Empresa criada com os centros de custo padrão. Você já está nela.')
       setNova(null)
       await escolherEmpresa(novoId)
     } catch (x: any) { toast(x.message, 'erro') } finally { setSalvando(false) }
@@ -174,7 +174,7 @@ export default function EmpresaPagina() {
 
       <Bloco className="p-3" titulo="Configuração da baixa de títulos" abertoInicial={configIncompleta} extra={configIncompleta ? <span className="ml-2 text-amber-700">· incompleta</span> : null}>
         <p className="mb-2 text-xs text-slate-600">
-          Ao baixar uma conta a pagar ou a receber, os <b>juros/multa</b> e os <b>descontos</b> viram lançamentos à parte, nestas contas do plano,
+          Ao baixar uma conta a pagar ou a receber, os <b>juros/multa</b> e os <b>descontos</b> viram lançamentos à parte, nestes centros de custo,
           para a DRE mostrar cada coisa no lugar certo (o valor do título fica na conta dele). Sem a conta definida, a baixa com juros ou desconto é recusada.
         </p>
         <div className="ficha grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -213,7 +213,7 @@ export default function EmpresaPagina() {
               </tbody>
             </table>
           </div>
-          <p className="mt-1 text-[11px] text-slate-500">Empresa desativada some para todos os usuários dela (os dados ficam guardados). A empresa nova já nasce com o plano de contas padrão, Caixa, Conta corrente e o centro de custo "Geral".</p>
+          <p className="mt-1 text-[11px] text-slate-500">Empresa desativada some para todos os usuários dela (os dados ficam guardados). A empresa nova já nasce com os centros de custo padrão, Caixa e Conta corrente.</p>
         </Bloco>
       )}
 

@@ -1,30 +1,30 @@
 // Conciliação bancária: importar o extrato do banco (OFX ou CSV) e tratar as linhas pendentes — conciliar com um título
-// em aberto (a linha vira a baixa; diferença a maior vira juros), classificar (conta do plano, centro, cliente/fornecedor)
+// em aberto (a linha vira a baixa; diferença a maior vira juros), classificar (centro de custo, cliente/fornecedor)
 // e confirmar, ou excluir. Porte do ImportarExtrato do Luminexus (0008) com a conciliação de títulos do Finanway (0003).
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase, ok } from '@/lib/supabase'
-import { listarCentros, listarContas, listarParceiros, listarPlano, rpc, todas, type ParceiroLista } from '@/lib/dados'
+import { listarContas, listarParceiros, listarPlano, rpc, todas, type ParceiroLista } from '@/lib/dados'
 import { lerArquivoTexto, lerExtrato, type LinhaExtrato } from '@/lib/extrato'
 import { fmtData, fmtDataHora, fmtMoeda, fmtValor, normalizar, somar } from '@/lib/format'
 import { useAuth } from '@/lib/auth'
-import { ehFinanceiro, type CentroCusto, type ContaFinanceira, type Lancamento, type PlanoConta } from '@/lib/types'
+import { ehFinanceiro, type ContaFinanceira, type Lancamento, type PlanoConta } from '@/lib/types'
 import { Abas, BotaoAtualizar, Campo, Carregando, Chip, Confirmar, Modal, Titulo, useToast, Vazio } from '@/components/ui'
 import ComboParceiro from '@/components/ComboParceiro'
 import OpcoesPlano from '@/components/OpcoesPlano'
 import FormLancamento from '@/components/FormLancamento'
 
 interface Importacao { id: number; conta_id: number; arquivo_nome: string; formato: string; periodo_de: string | null; periodo_ate: string | null; linhas: number; importadas: number; duplicadas: number; criado_em: string }
-type Previa = LinhaExtrato & { duplicada: boolean; marcada: boolean; plano_conta_id: number | null; parceiro_id: number | null; centro_custo_id: number | null; sugerida: boolean }
+type Previa = LinhaExtrato & { duplicada: boolean; marcada: boolean; plano_conta_id: number | null; parceiro_id: number | null; sugerida: boolean }
 interface Candidato { titulo_id: number; descricao: string; parceiro: string | null; vencimento: string; saldo: number; diferenca: number; dias: number }
-interface Cadastros { planos: PlanoConta[]; centros: CentroCusto[]; contas: ContaFinanceira[]; parceiros: ParceiroLista[] }
+interface Cadastros { planos: PlanoConta[]; contas: ContaFinanceira[]; parceiros: ParceiroLista[] }
 
 export default function Conciliacao() {
   const { toast } = useToast()
   const [aba, setAba] = useState<'importar' | 'pendentes'>('pendentes')
   const [cad, setCad] = useState<Cadastros | null>(null)
   const [qtdPendentes, setQtdPendentes] = useState<number | null>(null)
-  const carregarCadastros = () => Promise.all([listarPlano(false), listarCentros(false), listarContas(false), listarParceiros()])
-    .then(([planos, centros, contas, parceiros]) => setCad({ planos, centros, contas, parceiros })).catch((e) => toast(e.message, 'erro'))
+  const carregarCadastros = () => Promise.all([listarPlano(false), listarContas(false), listarParceiros()])
+    .then(([planos, contas, parceiros]) => setCad({ planos, contas, parceiros })).catch((e) => toast(e.message, 'erro'))
   const contarPendentes = () => Promise.resolve(supabase.from('lancamento').select('id', { count: 'exact', head: true }).eq('situacao', 'PENDENTE'))
     .then((r) => setQtdPendentes(r.count ?? 0)).catch(() => {})
   useEffect(() => { carregarCadastros(); contarPendentes() }, [])
@@ -75,15 +75,15 @@ function Importar({ cad, onImportou }: { cad: Cadastros; onImportou: () => void 
         r.forEach((x) => existentes.add(x.extrato_id))
       }
       // sugestões pelo histórico (mesma descrição já classificada antes)
-      const sug = new Map<string, { plano_conta_id: number | null; parceiro_id: number | null; centro_custo_id: number | null }>()
+      const sug = new Map<string, { plano_conta_id: number | null; parceiro_id: number | null }>()
       try {
-        const s = await rpc<{ descricao: string; plano_conta_id: number | null; parceiro_id: number | null; centro_custo_id: number | null }[]>('sugerir_classificacao', { p_descricoes: Array.from(new Set(linhas.map((l) => l.descricao))) })
+        const s = await rpc<{ descricao: string; plano_conta_id: number | null; parceiro_id: number | null }[]>('sugerir_classificacao', { p_descricoes: Array.from(new Set(linhas.map((l) => l.descricao))) })
         s.forEach((x) => sug.set(x.descricao, x))
       } catch { /* sem sugestão */ }
       setArquivo({ nome: f.name, formato })
       setPrevia(linhas.map((l) => {
         const dup = existentes.has(l.extrato_id); const s = sug.get(l.descricao)
-        return { ...l, duplicada: dup, marcada: !dup, plano_conta_id: s?.plano_conta_id ?? null, parceiro_id: s?.parceiro_id ?? null, centro_custo_id: s?.centro_custo_id ?? null, sugerida: !!s?.plano_conta_id }
+        return { ...l, duplicada: dup, marcada: !dup, plano_conta_id: s?.plano_conta_id ?? null, parceiro_id: s?.parceiro_id ?? null, sugerida: !!s?.plano_conta_id }
       }))
       toast(`${linhas.length} transações lidas (${formato})${existentes.size ? ` · ${existentes.size} já importadas` : ''}`, 'info')
     } catch (e: any) { toast(e.message, 'erro') }
@@ -96,7 +96,7 @@ function Importar({ cad, onImportou }: { cad: Cadastros; onImportou: () => void 
     try {
       const r = await rpc<{ importadas: number; duplicadas: number }>('importar_extrato', {
         p_conta_id: contaId, p_arquivo: arquivo.nome, p_formato: arquivo.formato,
-        p_linhas: sel.map((p) => ({ extrato_id: p.extrato_id, data: p.data, valor: p.valor, descricao: p.descricao, plano_conta_id: p.plano_conta_id, parceiro_id: p.parceiro_id, centro_custo_id: p.centro_custo_id })),
+        p_linhas: sel.map((p) => ({ extrato_id: p.extrato_id, data: p.data, valor: p.valor, descricao: p.descricao, plano_conta_id: p.plano_conta_id, parceiro_id: p.parceiro_id })),
       })
       toast(`${r.importadas} linha(s) importadas como pendentes${r.duplicadas ? ` · ${r.duplicadas} duplicadas ignoradas` : ''}. Concilie ou confirme em Pendentes.`)
       setPrevia([]); setArquivo(null); carregarHistorico(); onImportou()
@@ -134,7 +134,7 @@ function Importar({ cad, onImportou }: { cad: Cadastros; onImportou: () => void 
           <table className="tabela">
             <thead><tr>
               <th><input type="checkbox" checked={previa.every((p) => p.marcada || p.duplicada)} onChange={(e) => setPrevia((ps) => ps.map((p) => ({ ...p, marcada: p.duplicada ? false : e.target.checked })))} /></th>
-              <th>Data</th><th>Descrição no extrato</th><th className="num">Valor</th><th>Conta do plano</th><th>Cliente / fornecedor</th><th>Centro de custo</th><th></th>
+              <th>Data</th><th>Descrição no extrato</th><th className="num">Valor</th><th>Centro de custo</th><th>Cliente / fornecedor</th><th></th>
             </tr></thead>
             <tbody>
               {previa.map((p, i) => (
@@ -150,11 +150,6 @@ function Importar({ cad, onImportou }: { cad: Cadastros; onImportou: () => void 
                     </select>
                   </td>
                   <td className="min-w-[170px]">{!p.duplicada && <ComboParceiro parceiros={cad.parceiros} valor={p.parceiro_id} tipo={p.valor > 0 ? 'CLIENTE' : 'FORNECEDOR'} className="input py-0.5 text-[11px] bg-yellow-50" onChange={(id) => set(i, { parceiro_id: id })} placeholder="—" />}</td>
-                  <td>
-                    <select className="input py-0.5 text-[11px] bg-yellow-50" disabled={p.duplicada} value={p.centro_custo_id ?? ''} onChange={(e) => set(i, { centro_custo_id: e.target.value ? Number(e.target.value) : null })}>
-                      <option value="">—</option>{cad.centros.filter((c) => c.ativo).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                    </select>
-                  </td>
                   <td>{p.duplicada ? <Chip cor="cinza">já importada</Chip> : p.sugerida ? <Chip cor="verde" title="Classificação sugerida pelo histórico">sugerida</Chip> : ''}</td>
                 </tr>
               ))}
@@ -265,7 +260,7 @@ function Pendentes({ cad, onCadastros, onMudou }: { cad: Cadastros; onCadastros:
         )}
       </div>
       {conciliar && <ConciliarTitulo lancamento={conciliar} onFechar={(feito) => { setConciliar(null); if (feito) mudou() }} />}
-      {classificar && <FormLancamento inicial={classificar} planos={cad.planos} centros={cad.centros} contas={cad.contas} parceiros={cad.parceiros}
+      {classificar && <FormLancamento inicial={classificar} planos={cad.planos} contas={cad.contas} parceiros={cad.parceiros}
         onPlanos={onCadastros} onParceiros={onCadastros} onFechar={(m) => { setClassificar(null); if (m) mudou() }} />}
       {lote && <ClassificarLote linhas={marcadosLista} cad={cad} onFechar={(m) => { setLote(false); if (m) mudou() }} />}
       <Confirmar aberto={!!excluir} perigo titulo="Excluir linha do extrato" texto={`Excluir a linha de ${fmtMoeda(excluir?.valor)} de ${fmtData(excluir?.data)}? Se o arquivo for importado de novo, ela volta.`}
@@ -320,16 +315,14 @@ function ClassificarLote({ linhas, cad, onFechar }: { linhas: Lancamento[]; cad:
   const { toast } = useToast()
   const tipo = linhas[0].tipo
   const [planoId, setPlanoId] = useState<number | ''>('')
-  const [centroId, setCentroId] = useState<number | ''>('')
   const [parceiroId, setParceiroId] = useState<number | null>(null)
   const [salvando, setSalvando] = useState(false)
   async function aplicar() {
-    if (!planoId) { toast('Escolha a conta do plano', 'erro'); return }
-    if (cad.planos.find((p) => p.id === planoId)?.nome === 'A classificar') { toast('Escolha uma conta do plano diferente de "A classificar"', 'erro'); return }
+    if (!planoId) { toast('Escolha o centro de custo', 'erro'); return }
+    if (cad.planos.find((p) => p.id === planoId)?.nome === 'A classificar') { toast('Escolha um centro de custo diferente de "A classificar"', 'erro'); return }
     setSalvando(true)
     try {
       const dados: Record<string, unknown> = { plano_conta_id: planoId, situacao: 'CONFIRMADO' }
-      if (centroId) dados.centro_custo_id = centroId
       if (parceiroId) dados.parceiro_id = parceiroId
       ok(await supabase.from('lancamento').update(dados).in('id', linhas.map((l) => l.id)))
       toast(`${linhas.length} lançamento(s) classificados e confirmados`); onFechar(true)
@@ -338,18 +331,13 @@ function ClassificarLote({ linhas, cad, onFechar }: { linhas: Lancamento[]; cad:
   return (
     <Modal aberto titulo={`Classificar ${linhas.length} ${tipo === 'ENTRADA' ? 'entrada(s)' : 'saída(s)'}`} onFechar={() => onFechar(false)} largura="max-w-lg">
       <div className="ficha grid gap-2">
-        <div className="text-xs text-slate-600">Total {fmtMoeda(somar(linhas.map((l) => l.valor)))}. As linhas são confirmadas com a classificação abaixo (cliente/fornecedor e centro só mudam se escolhidos).</div>
-        <Campo label="Conta do plano">
+        <div className="text-xs text-slate-600">Total {fmtMoeda(somar(linhas.map((l) => l.valor)))}. As linhas são confirmadas com a classificação abaixo (o cliente/fornecedor só muda se escolhido).</div>
+        <Campo label="Centro de custo">
           <select className="input" value={planoId} onChange={(e) => setPlanoId(e.target.value ? Number(e.target.value) : '')}>
             <option value="">— escolha —</option><OpcoesPlano planos={cad.planos} filtro={(c) => c.tipo === tipo} />
           </select>
         </Campo>
         <Campo label={tipo === 'ENTRADA' ? 'Cliente' : 'Fornecedor'}><ComboParceiro parceiros={cad.parceiros} valor={parceiroId} tipo={tipo === 'ENTRADA' ? 'CLIENTE' : 'FORNECEDOR'} onChange={setParceiroId} /></Campo>
-        <Campo label="Centro de custo">
-          <select className="input" value={centroId} onChange={(e) => setCentroId(e.target.value ? Number(e.target.value) : '')}>
-            <option value="">—</option>{cad.centros.filter((c) => c.ativo).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-          </select>
-        </Campo>
         <div className="acoes flex justify-end gap-2"><button className="btn-secondary" onClick={() => onFechar(false)}>Cancelar</button><button className="btn-primary" disabled={salvando} onClick={aplicar}>✓ Classificar e confirmar</button></div>
       </div>
     </Modal>

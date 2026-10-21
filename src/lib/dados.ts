@@ -1,6 +1,6 @@
 // Acesso a dados compartilhado entre telas
 import { supabase, ok } from './supabase'
-import type { CentroCusto, ContaFinanceira, Parceiro, PlanoConta } from './types'
+import type { ContaFinanceira, Parceiro, PlanoConta } from './types'
 
 type Pagina<T> = PromiseLike<{ data: T[] | null; error: { message: string } | null }>
 
@@ -26,15 +26,11 @@ export const listarContas = async (soAtivas = true) => {
   if (soAtivas) q = q.eq('ativa', true)
   return ok(await q) as ContaFinanceira[]
 }
+/** centros de custo (tabela plano_conta) em ordem de código */
 export const listarPlano = async (soAtivas = true) => {
   let q = supabase.from('plano_conta').select('*').order('codigo')
   if (soAtivas) q = q.eq('ativa', true)
   return ok(await q) as PlanoConta[]
-}
-export const listarCentros = async (soAtivos = true) => {
-  let q = supabase.from('centro_custo').select('*').order('codigo', { nullsFirst: false }).order('nome')
-  if (soAtivos) q = q.eq('ativo', true)
-  return ok(await q) as CentroCusto[]
 }
 /** colunas leves do cliente/fornecedor para listas e combos */
 export const COLUNAS_PARCEIRO_LISTA = 'id, tipo, pessoa, nome, nome_fantasia, documento, email, telefone, cidade, uf, ativo'

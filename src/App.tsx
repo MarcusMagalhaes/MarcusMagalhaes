@@ -23,7 +23,6 @@ const RelatorioMensal = lazy(() => import('@/pages/relatorios/RelatorioMensal'))
 const ExtratoConta = lazy(() => import('@/pages/relatorios/ExtratoConta'))
 const Parceiros = lazy(() => import('@/pages/cadastros/Parceiros'))
 const Contas = lazy(() => import('@/pages/cadastros/Contas'))
-const PlanoContas = lazy(() => import('@/pages/cadastros/PlanoContas'))
 const CentrosCusto = lazy(() => import('@/pages/cadastros/CentrosCusto'))
 const Usuarios = lazy(() => import('@/pages/admin/Usuarios'))
 const EmpresaPagina = lazy(() => import('@/pages/admin/Empresa'))
@@ -70,7 +69,7 @@ function Rotas() {
         <Route path="/relatorios/extrato" element={<ExtratoConta />} />
         <Route path="/cadastros/parceiros" element={<Parceiros />} />
         <Route path="/cadastros/contas" element={<Contas />} />
-        <Route path="/cadastros/plano-contas" element={<PlanoContas />} />
+        <Route path="/cadastros/plano-contas" element={<Navigate to="/cadastros/centros-custo" replace />} />
         <Route path="/cadastros/centros-custo" element={<CentrosCusto />} />
         <Route path="/admin/usuarios" element={<Protegido admin><Usuarios /></Protegido>} />
         <Route path="/admin/empresa" element={<Protegido admin><EmpresaPagina /></Protegido>} />

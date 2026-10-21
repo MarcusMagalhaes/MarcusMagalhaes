@@ -54,13 +54,13 @@ export default function ExtratoConta() {
     if (!x) return
     const tr = linhas.map((l) => `<tr><td>${fmtData(l.data)}</td><td>${escHtml(l.descricao)}</td><td>${escHtml(l.plano)}</td><td>${escHtml(l.parceiro)}</td><td>${escHtml(l.documento)}</td><td class="num">${l.valor > 0 ? fmtValor(l.valor) : ''}</td><td class="num">${l.valor < 0 ? fmtValor(-l.valor) : ''}</td><td class="num">${fmtValor(l.saldo)}</td></tr>`).join('')
     imprimirHtml(titulo, `${cabecalhoImpressao(nomeDaEmpresa(empresa), titulo, detalhe)}
-      <table class="tabela"><thead><tr><th>Data</th><th>Descrição</th><th>Conta do plano</th><th>Cliente/fornecedor</th><th>Documento</th><th class="num">Entrada</th><th class="num">Saída</th><th class="num">Saldo</th></tr></thead>
+      <table class="tabela"><thead><tr><th>Data</th><th>Descrição</th><th>Centro de custo</th><th>Cliente/fornecedor</th><th>Documento</th><th class="num">Entrada</th><th class="num">Saída</th><th class="num">Saldo</th></tr></thead>
       <tbody class="zebra"><tr><td colspan="7"><i>Saldo anterior</i></td><td class="num">${fmtValor(x.saldo_anterior)}</td></tr>${tr}</tbody>
       <tfoot><tr><td colspan="5">Totais</td><td class="num">${fmtValor(entradas)}</td><td class="num">${fmtValor(saidas)}</td><td class="num">${fmtValor(saldoFinal)}</td></tr></tfoot></table>`, 'landscape')
   }
   function csv() {
     if (!x) return
-    baixarCsv(`extrato-${x.conta.nome}-${de}-a-${ate}`, ['Data', 'Descrição', 'Conta do plano', 'Cliente/fornecedor', 'Documento', 'Entrada', 'Saída', 'Saldo'],
+    baixarCsv(`extrato-${x.conta.nome}-${de}-a-${ate}`, ['Data', 'Descrição', 'Centro de custo', 'Cliente/fornecedor', 'Documento', 'Entrada', 'Saída', 'Saldo'],
       [['', 'Saldo anterior', '', '', '', '', '', Number(x.saldo_anterior)], ...linhas.map((l) => [fmtData(l.data), l.descricao, l.plano, l.parceiro, l.documento, l.valor > 0 ? l.valor : '', l.valor < 0 ? -l.valor : '', l.saldo])])
   }
 
@@ -93,7 +93,7 @@ export default function ExtratoConta() {
           </div>
           <div className="card flex-1 min-h-0 overflow-auto">
             <table className="tabela">
-              <thead><tr><th>Data</th><th>Descrição</th><th>Conta do plano</th><th>Cliente/fornecedor</th><th>Documento</th><th className="num">Entrada</th><th className="num">Saída</th><th className="num">Saldo</th></tr></thead>
+              <thead><tr><th>Data</th><th>Descrição</th><th>Centro de custo</th><th>Cliente/fornecedor</th><th>Documento</th><th className="num">Entrada</th><th className="num">Saída</th><th className="num">Saldo</th></tr></thead>
               <tbody>
                 <tr><td></td><td colSpan={6} className="italic text-slate-500">Saldo anterior em {fmtData(de)}</td><td className="num font-semibold">{fmtValor(x.saldo_anterior)}</td></tr>
                 {linhas.map((l) => (

@@ -1,11 +1,11 @@
-// Plano de contas (0002, mesmo desenho dos centros de custo do Luminexus): árvore de até 4 níveis. Código de 8 dígitos,
-// 2 por nível: 01000000 (1º nível) → 01010000 → 01010100 → 01010101. O 1º nível agrupa; lançamento, título e orçamento
-// só do 2º nível para baixo. `grupo` (classificação na DRE) é escolhido no 1º nível e herdado pelos filhos.
+// Centros de custo (0002/0007, tabela interna plano_conta; mesmo desenho do Luminexus 0082): árvore de até 4 níveis.
+// Código de 8 dígitos, 2 por nível: 01000000 (1º nível) → 01010000 → 01010100 → 01010101. O 1º nível agrupa e define
+// entrada/saída; lançamento, título e orçamento só do 2º nível para baixo. `grupo` (linha da DRE) vem do 1º nível.
 import type { GrupoPlano, PlanoConta, TipoMovimento } from './types'
 
 export const NIVEL_MAX = 4
 export const MAX_FILHOS = 99
-export const NOME_NIVEL: Record<number, string> = { 1: '1º nível (grupo)', 2: '2º nível', 3: '3º nível', 4: '4º nível' }
+export const NOME_NIVEL: Record<number, string> = { 1: '1º nível (pai)', 2: '2º nível', 3: '3º nível', 4: '4º nível' }
 
 /** 1010000 → '01.01.00.00' */
 export const fmtCodigoPlano = (codigo: number) => String(codigo).padStart(8, '0').replace(/(\d{2})(?=\d)/g, '$1.')
@@ -56,7 +56,7 @@ export type LinhaDre =
   | { tipo: 'grupo'; chave: GrupoPlano; rotulo: string; sinal: 1 | -1 }
   | { tipo: 'resultado'; chave: string; rotulo: string; grupos: GrupoPlano[] }
 
-/** estrutura da DRE gerencial (0004, função dre): a tela soma os totais por conta do plano dentro de cada grupo */
+/** estrutura da DRE gerencial (0004, função dre): a tela soma os totais por centro de custo dentro de cada grupo */
 export const ESTRUTURA_DRE: LinhaDre[] = [
   { tipo: 'grupo', chave: 'RECEITA_OPERACIONAL', rotulo: 'Receita bruta', sinal: 1 },
   { tipo: 'grupo', chave: 'DEDUCAO', rotulo: '(−) Deduções da receita', sinal: -1 },

@@ -79,7 +79,7 @@ export default function RelatorioMensal() {
     if (!b) return
     const linhas = [...entradas.flatMap((g) => g.itens.map((p) => ['Entrada', g.raiz, fmtCodigoCurto(p.codigo), p.nome, p.qtd, Number(p.total)])),
       ...saidas.flatMap((g) => g.itens.map((p) => ['Saída', g.raiz, fmtCodigoCurto(p.codigo), p.nome, p.qtd, Number(p.total)]))]
-    baixarCsv(`relatorio-mensal-${mes}`, ['Tipo', 'Grupo', 'Código', 'Conta do plano', 'Lançamentos', 'Total'], linhas)
+    baixarCsv(`relatorio-mensal-${mes}`, ['Tipo', 'Centro pai', 'Código', 'Centro de custo', 'Lançamentos', 'Total'], linhas)
   }
 
   const Grupos = ({ grupos, cor }: { grupos: ReturnType<typeof porRaiz>; cor: string }) => grupos.length === 0 ? <div className="py-3 text-center text-xs text-slate-400">Nenhum lançamento.</div> : (

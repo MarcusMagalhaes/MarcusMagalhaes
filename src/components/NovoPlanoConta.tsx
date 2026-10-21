@@ -1,6 +1,6 @@
-// Inclusão de conta no plano de contas (0002): o mesmo formulário na tela Plano de contas (+ Novo e + Filho) e nos
-// lançamentos/títulos (+ Conta do plano). A conta pai é escolhida na lista (ou "Nenhuma (1º nível)"); o filho herda o tipo
-// e o grupo da DRE do pai; código e nível são gerados pelo banco (fn_plano_inclusao) e não mudam depois.
+// Inclusão de centro de custo (0002/0007, tabela plano_conta): o mesmo formulário na tela Centros de custo (+ Novo e
+// + Filho) e nos lançamentos/títulos (+). O pai é escolhido na lista (ou "Nenhum (1º nível)"); o filho herda o tipo e o
+// grupo da DRE do pai; código e nível são gerados pelo banco (fn_plano_inclusao) e não mudam depois.
 import { useMemo, useState } from 'react'
 import { supabase, ok } from '@/lib/supabase'
 import { MAX_FILHOS, NIVEL_MAX, NOME_NIVEL, fmtCodigoPlano, proximoCodigo } from '@/lib/planoContas'
@@ -9,7 +9,7 @@ import { Campo, Modal, useToast } from './ui'
 
 const TIPOS: Record<TipoMovimento, string> = { ENTRADA: 'Entrada (receita)', SAIDA: 'Saída (despesa)' }
 
-/** onFechar(criada) — criada = a conta gravada; sem argumento = cancelado */
+/** onFechar(criada) — criada = o centro gravado; sem argumento = cancelado */
 export default function NovoPlanoConta({ lista, pai: paiInicial, tipo: tipoInicial = 'SAIDA', onFechar }: {
   lista: PlanoConta[]; pai?: PlanoConta | null; tipo?: TipoMovimento; onFechar: (criada?: PlanoConta) => void
 }) {
@@ -34,20 +34,20 @@ export default function NovoPlanoConta({ lista, pai: paiInicial, tipo: tipoInici
       const criada = ok<PlanoConta>(await supabase.from('plano_conta').insert(pai
         ? { pai_id: pai.id, nome: nome.trim(), tipo: pai.tipo, grupo: pai.grupo }
         : { nivel: 1, nome: nome.trim(), tipo, grupo }).select('*').single())
-      toast('Conta incluída no plano')
+      toast('Centro de custo incluído')
       onFechar(criada)
     } catch (e: any) { toast(e.message, 'erro'); setSalvando(false) }
   }
 
   return (
-    <Modal aberto titulo={pai ? 'Nova conta no plano (filha)' : 'Nova conta no plano'} onFechar={() => onFechar()} largura="max-w-lg">
+    <Modal aberto titulo={pai ? 'Novo centro de custo (filho)' : 'Novo centro de custo'} onFechar={() => onFechar()} largura="max-w-lg">
       <div className="ficha grid grid-cols-2 gap-2">
-        <Campo label="Conta pai" className="col-span-2">
+        <Campo label="Centro pai" className="col-span-2">
           <select className="input" value={paiId ?? ''} onChange={(e) => {
             const p = lista.find((c) => c.id === Number(e.target.value)) ?? null
             setPaiId(p?.id ?? null); if (p) setTipo(p.tipo)
           }}>
-            <option value="">Nenhuma (1º nível: um novo grupo)</option>
+            <option value="">Nenhum (1º nível)</option>
             {ordem.filter((c) => podeSerPai(c) || c.id === paiId).map((c) => (
               <option key={c.id} value={c.id}>
                 {'   '.repeat(c.nivel - 1)}{c.nivel === 1 ? (c.tipo === 'ENTRADA' ? '▲ ' : '▼ ') : ''}{fmtCodigoPlano(c.codigo)} — {c.nome}
@@ -71,7 +71,7 @@ export default function NovoPlanoConta({ lista, pai: paiInicial, tipo: tipoInici
         <Campo label="Código (gerado)"><div className="input bg-slate-50 font-mono font-bold">{typeof prevista === 'number' ? fmtCodigoPlano(prevista) : prevista}</div></Campo>
         <Campo label="Nível"><div className="input bg-slate-50">{NOME_NIVEL[(pai?.nivel ?? 0) + 1]}</div></Campo>
         <p className="col-span-2 text-[11px] text-slate-500">
-          {pai ? '' : 'O 1º nível só agrupa: os lançamentos vão nas contas abaixo dele. '}Depois de salvo, o código, a conta pai, o tipo e a linha da DRE não mudam.
+          {pai ? '' : 'O 1º nível só agrupa: os lançamentos vão nos centros abaixo dele. '}Depois de salvo, o código, o pai, o tipo e a linha da DRE não mudam.
         </p>
         <div className="acoes col-span-2 flex justify-end gap-2">
           <button className="btn-secondary" onClick={() => onFechar()}>Cancelar</button>

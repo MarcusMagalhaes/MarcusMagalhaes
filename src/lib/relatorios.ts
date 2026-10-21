@@ -1,4 +1,4 @@
-// Funções puras dos relatórios (DRE, fluxo de caixa, períodos): somam por conta do plano, pela árvore e por mês.
+// Funções puras dos relatórios (DRE, fluxo de caixa, períodos): somam por centro de custo, pela árvore e por mês.
 // As telas só desenham; aqui fica a conta, com teste em relatorios.test.ts.
 import { contemCodigo, ESTRUTURA_DRE, FORA_DRE, SINAL_GRUPO, valorResultado } from './planoContas'
 import { limitesDoMes, somarMes } from './format'
@@ -31,7 +31,7 @@ export function periodoDoAtalho(a: AtalhoPeriodo, hoje: string): { de: string; a
   return limitesDoMes(mes)
 }
 
-/** totais por conta do plano e mês: Map<plano_conta_id, Map<'YYYY-MM', total>> */
+/** totais por centro de custo e mês: Map<plano_conta_id, Map<'YYYY-MM', total>> */
 export function totaisPorConta(linhas: LinhaDreBanco[]): Map<number, Map<string, number>> {
   const r = new Map<number, Map<string, number>>()
   for (const l of linhas) {
@@ -67,7 +67,7 @@ export function totaisGrupo(planos: PlanoConta[], porConta: Map<number, Map<stri
   return r
 }
 
-/** contas do plano de um grupo da DRE que tiveram movimento (ela ou descendentes), em ordem de código, com o nível */
+/** centros de custo de um grupo da DRE que tiveram movimento (ela ou descendentes), em ordem de código, com o nível */
 export function contasDoGrupo(grupo: GrupoPlano, planos: PlanoConta[], porConta: Map<number, Map<string, number>>): PlanoConta[] {
   const doGrupo = planos.filter((p) => p.grupo === grupo).sort((a, b) => a.codigo - b.codigo)
   return doGrupo.filter((c) => doGrupo.some((d) => contemCodigo(c, d.codigo) && porConta.has(d.id)))

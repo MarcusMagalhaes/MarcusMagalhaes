@@ -25,10 +25,15 @@ Imagens: `python scripts/identidade.py`.
   (parecer). A tela esconde; o banco confere.
 - Títulos: `valor_pago`, `pago_em`, `situacao` são calculados pelo banco; gravar só `soColunas(obj, COLUNAS_TITULO)`.
   Baixa só por `baixar_titulo`/`conciliar_titulo`, estorno por `estornar_baixa`; juros e descontos viram lançamentos à
-  parte nas contas do plano configuradas em Empresa › Configuração. DRE por competência usa o título; por caixa, os
+  parte nos centros de custo configurados em Empresa › Configuração. DRE por competência usa o título; por caixa, os
   lançamentos.
-- Plano de contas: árvore de 4 níveis, código de 8 dígitos gerado pelo banco; o 1º nível define tipo e linha da DRE
-  (`grupo`); lançamento/título/orçamento só do 2º nível para baixo. Utilitários em `lib/planoContas.ts`.
+- Centro de custo (0007, como no Luminexus): árvore de 4 níveis na tabela interna `plano_conta` (coluna `plano_conta_id`;
+  nas telas e mensagens sempre "centro de custo"), código de 8 dígitos gerado pelo banco; o 1º nível define entrada/saída
+  e a linha da DRE (`grupo`): na ficha o centro escolhido define o tipo do lançamento. Lançamento/título/orçamento só do
+  2º nível para baixo. Utilitários em `lib/planoContas.ts`. A tabela `centro_custo` (lista simples antiga) e as colunas
+  `centro_custo_id` estão fora de uso (sempre vazias; ficam só para as migrações antigas rodarem de novo).
+- Lançamento por modelo (0007, Luminexus 0121): `modelo_lancamento.blocos` = [{titulo, cor, centros: [plano_conta.id]}];
+  centro entra com os filhos. Tela em `pages/financeiro/LancamentoModelo.tsx` (☰ Lista / ▦ Por modelo em Lançamentos).
 - Telas: `<Carregando />` + overlay `Ocupado` (leituras do Supabase já acionam via `lib/ocupado.ts`); listas grandes com
   `todas()` de `lib/dados.ts` (a API corta em 1.000). Consultas encadeadas do supabase-js são `PromiseLike`: para
   `.then().catch()` embrulhe em `Promise.resolve(...)`.
