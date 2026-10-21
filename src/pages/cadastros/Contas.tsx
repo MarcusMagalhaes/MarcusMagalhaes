@@ -85,7 +85,7 @@ export default function Contas() {
         </table>
       </div>
       <div className="mt-2 space-y-1 text-[11px] text-slate-500">
-        <p>Saldo atual = saldo inicial + entradas − saídas ± transferências (só lançamentos confirmados; os pendentes da conciliação ficam de fora). Informe o saldo inicial com a data em que o controle começou no FinFlow.</p>
+        <p>Saldo atual = saldo inicial + entradas − saídas ± transferências (só lançamentos confirmados; os pendentes da conciliação ficam de fora). Informe o saldo inicial com a data em que o controle começou no Finanway.</p>
         <p><b>Cartão de crédito:</b> cadastre o cartão como uma conta. As compras são saídas da conta do cartão (o saldo fica negativo: é a fatura em aberto); pagar a fatura é uma <b>transferência</b> da conta corrente para o cartão.</p>
       </div>
 

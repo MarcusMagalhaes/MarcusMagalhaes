@@ -118,7 +118,7 @@ export default function Layout() {
   )
   const rodape = (
     <div className="p-3 border-t border-slate-200 flex items-center justify-between text-xs">
-      <span className="flex items-center gap-1.5 text-slate-400" title={`FinFlow · build ${VERSAO}`}><LogoMark size={18} /><span className="font-semibold">FinFlow</span><span className="tabular-nums">v{VERSAO}</span></span>
+      <span className="flex items-center gap-1.5 text-slate-400" title={`Finanway · build ${VERSAO}`}><LogoMark size={18} /><span className="font-semibold">Finanway</span><span className="tabular-nums">v{VERSAO}</span></span>
       <button className="text-laranja-700 font-semibold underline" onClick={sair}>Sair</button>
     </div>
   )
@@ -193,7 +193,7 @@ export default function Layout() {
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-slate-700">
               <li>No Safari, toque em <b>Compartilhar</b> (o quadrado com a seta para cima).</li>
               <li>Escolha <b>Adicionar à Tela de Início</b>.</li>
-              <li>Toque em <b>Adicionar</b>. O FinFlow aparece como um app.</li>
+              <li>Toque em <b>Adicionar</b>. O Finanway aparece como um app.</li>
             </ol>
             <div className="mt-3 flex justify-end"><button className="btn-primary" onClick={() => setDicaIos(false)}>Entendi</button></div>
           </div>

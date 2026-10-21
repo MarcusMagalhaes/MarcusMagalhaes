@@ -1,4 +1,4 @@
-# Segurança do FinFlow
+# Segurança do Finanway
 
 Modelo de ameaça (o mesmo do Luminexus): a chave *anon* do Supabase vai dentro do JavaScript do site — qualquer pessoa na
 internet a tem. Toda proteção dos dados fica no banco (RLS, permissões e checagens nas funções). O front só esconde botões.

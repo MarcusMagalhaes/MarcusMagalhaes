@@ -55,7 +55,7 @@ body { -webkit-tap-highlight-color: transparent; }
   .tabela:has(> thead) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   /* linha de botões (Salvar/Cancelar/Excluir) presa no rodapé da área que rola (Luminexus 18/10) */
   .acoes { position: sticky; bottom: 0; z-index: 10; background: #fff; margin: 0 -0.5rem; padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
-           border-top: 1px solid #e2e8f0; box-shadow: 0 -6px 12px -8px rgba(52, 64, 76, 0.35); }
+           border-top: 1px solid #e2e8f0; box-shadow: 0 -6px 12px -8px rgba(36, 40, 44, 0.35); }
 }
 /* iPhone/iPad: campo com letra menor que 16px faz o Safari dar zoom ao tocar e a página fica deslocada para o lado */
 @supports (-webkit-touch-callout: none) {

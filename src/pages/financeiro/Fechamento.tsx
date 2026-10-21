@@ -1,4 +1,4 @@
-// Fechamento do mês (Luminexus 0064 → FinFlow 0003): o financeiro fecha o mês, o banco grava o balancete e trava os
+// Fechamento do mês (Luminexus 0064 → Finanway 0003): o financeiro fecha o mês, o banco grava o balancete e trava os
 // lançamentos daquele mês; o contador dá o parecer (aprovado, com ressalvas ou devolvido — devolvido destrava). Só a
 // diretoria reabre um mês fechado.
 import { Fragment, useEffect, useMemo, useState } from 'react'

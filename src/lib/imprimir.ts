@@ -6,9 +6,9 @@ export const escHtml = (s: string | number | null | undefined) => escapar(s == n
 
 /** cabeçalho padrão dos relatórios impressos: empresa, título e período */
 export const cabecalhoImpressao = (empresa: string, titulo: string, detalhe?: string) =>
-  `<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #e65f03;padding-bottom:4px;margin-bottom:8px">
-     <div><div style="font-size:9pt;color:#64748b">${escHtml(empresa)}</div><h1 style="font-size:14pt;margin:0;color:#34404c">${escHtml(titulo)}</h1>${detalhe ? `<div style="font-size:9pt">${escHtml(detalhe)}</div>` : ''}</div>
-     <div style="font-size:8pt;color:#94a3b8">FinFlow · ${escHtml(new Date().toLocaleString('pt-BR'))}</div>
+  `<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #e97d25;padding-bottom:4px;margin-bottom:8px">
+     <div><div style="font-size:9pt;color:#64748b">${escHtml(empresa)}</div><h1 style="font-size:14pt;margin:0;color:#24282c">${escHtml(titulo)}</h1>${detalhe ? `<div style="font-size:9pt">${escHtml(detalhe)}</div>` : ''}</div>
+     <div style="font-size:8pt;color:#94a3b8">Finanway · ${escHtml(new Date().toLocaleString('pt-BR'))}</div>
    </div>`
 
 export function imprimirHtml(titulo: string, html: string, orientacao: 'landscape' | 'portrait' = 'portrait') {
@@ -30,7 +30,7 @@ export function imprimirHtml(titulo: string, html: string, orientacao: 'landscap
   .no-print { display: none !important; }
   .barra-impressao { position: fixed; top: 8px; right: 8px; display: flex; gap: 6px; }
   .barra-impressao button { font: 600 12px Montserrat, sans-serif; padding: 6px 12px; border-radius: 6px; border: 1px solid #94a3b8; background: #fff; cursor: pointer; }
-  .barra-impressao .ok { background: #34404c; color: #fff; border-color: #34404c; }
+  .barra-impressao .ok { background: #24282c; color: #fff; border-color: #24282c; }
   @media print { .barra-impressao { display: none; } }
 </style></head><body>
 <div class="barra-impressao no-print"><button class="fechar">Fechar</button><button class="ok">Imprimir / salvar PDF</button></div>

@@ -1,4 +1,4 @@
--- FinFlow · 0003: movimento financeiro — títulos (contas a pagar e a receber), lançamentos (o que entrou e saiu das
+-- Finanway · 0003: movimento financeiro — títulos (contas a pagar e a receber), lançamentos (o que entrou e saiu das
 -- contas), baixas, importação de extrato e conciliação, documentos anexados, orçamento e fechamento do mês.
 -- Rode depois da 0002. Pode ser executado mais de uma vez.
 

@@ -76,7 +76,7 @@ export default function Usuarios() {
     <div className="mx-auto max-w-4xl">
       <Titulo acoes={<BotaoAtualizar onClick={carregar} />}>Usuários · {empresa?.nome_fantasia || empresa?.razao_social}</Titulo>
       <div className="card px-3 py-1.5 mb-1.5 text-xs text-slate-600">
-        Informe o <b>e-mail Google</b> da pessoa e o papel. Ela entra no FinFlow com o Google e já tem acesso a esta empresa; quem já tem conta
+        Informe o <b>e-mail Google</b> da pessoa e o papel. Ela entra no Finanway com o Google e já tem acesso a esta empresa; quem já tem conta
         recebe o acesso na hora. A mesma conta pode entrar em mais de uma empresa (o contador, por exemplo, atende várias).
       </div>
 

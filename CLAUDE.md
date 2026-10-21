@@ -1,13 +1,15 @@
-# FinFlow — memória do app
+# Finanway — memória do app
 
-**FinFlow — Gestão Financeira Inteligente**: sistema financeiro completo e independente para empresas (multiempresa).
+**Finanway — Gestão Financeira Inteligente**: sistema financeiro completo e independente para empresas (multiempresa).
 Nasceu do módulo financeiro do Luminexus e segue o mesmo padrão: React 19 + Vite + Tailwind 3 (site estático no Cloudflare
 Workers) e Supabase (Postgres, Auth, Storage, RLS). Visão geral, papéis, implantação e publicação em `README.md`; regras de
 segurança em `SEGURANCA.md` (ler antes de mexer no banco).
 
-Identidade (21/10/2026, da arte em `docs/identidade/finflow-original.jpg`): grafite `grafite-900 #34404C` (primária: menu
-ativo, títulos, botões) e laranja `laranja-500 #E65F03` (destaque: faixa do cabeçalho, alertas); fonte Montserrat; slogan
-"Gestão Financeira Inteligente" sempre em texto (na arte ele saiu cortado). Imagens: `python scripts/identidade.py`.
+Identidade (21/10/2026; nome antigo FinFlow, trocado para **Finanway — by One Way**; arte em
+`docs/identidade/finanway-original.jpg`, fundo carvão): carvão `grafite-900 #24282C` (primária: menu ativo, títulos,
+botões; fundo da arte `grafite-950 #181B1F`), laranja `laranja-500 #E97D25` (destaque: faixa do cabeçalho, alertas), cinza
+metálico `grafite-500 #6A7077`; fonte Montserrat. A logo completa (`components/Logo.tsx`) só vai sobre fundo escuro.
+Imagens: `python scripts/identidade.py`.
 
 - Idioma: código, comentários, commits e respostas em **português**.
 - Front: `npm run typecheck` / `npm test` / `npm run build` (Node 22). Banco: `npm run banco:testar` (PostgreSQL local com

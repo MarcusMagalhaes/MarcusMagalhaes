@@ -1,4 +1,4 @@
--- Conferência de segurança do banco FinFlow (regras de SEGURANCA.md). Roda no CI (banco de teste), no backup diário
+-- Conferência de segurança do banco Finanway (regras de SEGURANCA.md). Roda no CI (banco de teste), no backup diário
 -- (banco de produção) e à mão (scripts/conferir_seguranca.py). Cada linha devolvida é um problema; nenhuma = tudo certo.
 select 'tabela sem RLS' as problema, c.relname as objeto
 from pg_class c join pg_namespace n on n.oid = c.relnamespace

@@ -25,7 +25,7 @@ export function Secao({ titulo, acao, children, className = '', abertoInicial }:
 
 export type ItemBarra = { chave: string | number; rotulo: ReactNode; valor: number; texto: string; detalhe?: string; cor?: string }
 
-export function ListaBarras({ itens, cor = '#34404c', vazio = 'Sem dados.' }: { itens: ItemBarra[]; cor?: string; vazio?: string }) {
+export function ListaBarras({ itens, cor = '#24282c', vazio = 'Sem dados.' }: { itens: ItemBarra[]; cor?: string; vazio?: string }) {
   if (!itens.length) return <div className="py-4 text-center text-xs text-slate-400">{vazio}</div>
   const max = Math.max(...itens.map((i) => i.valor), 0) || 1
   return (
@@ -44,8 +44,8 @@ export function ListaBarras({ itens, cor = '#34404c', vazio = 'Sem dados.' }: { 
 }
 
 export const COR_ENTRADA = '#059669'
-export const COR_SAIDA = '#e65f03'
-export const COR_SALDO = '#34404c'
+export const COR_SAIDA = '#e97d25'
+export const COR_SALDO = '#24282c'
 
 /** barras lado a lado (entradas × saídas) por período, com linha opcional (saldo); valores em R$ */
 export function GraficoBarras({ periodos, series, linha, altura = 180, fmt }: {

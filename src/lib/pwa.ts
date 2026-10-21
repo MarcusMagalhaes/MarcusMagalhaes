@@ -18,7 +18,7 @@ export function registrarPwa() {
 export const instalado = () => window.matchMedia?.('(display-mode: standalone)').matches || (navigator as any).standalone === true
 
 /** marca (sessionStorage) da janela que o app instalado no iPhone abre só para o login com o Google (Luminexus 1.1.025) */
-export const CHAVE_JANELA_LOGIN = 'finflow_janela_login'
+export const CHAVE_JANELA_LOGIN = 'finanway_janela_login'
 /** esta janela foi aberta pelo app instalado só para concluir o login? (não mostra o app: conclui, avisa e se fecha) */
 export function ehJanelaLogin() { try { return sessionStorage.getItem(CHAVE_JANELA_LOGIN) === '1' } catch { return false } }
 const ehIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent)

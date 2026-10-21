@@ -1,6 +1,6 @@
-// FinFlow — Worker do Cloudflare: serve o site (assets) e registra as violações da CSP.
+// Finanway — Worker do Cloudflare: serve o site (assets) e registra as violações da CSP.
 //  • /api/csp (POST): o navegador manda o relatório quando a Content-Security-Policy bloqueia algo; vai para o log do
-//    Worker (npx wrangler tail finflow). Nada de dado da empresa passa por aqui.
+//    Worker (npx wrangler tail finanway). Nada de dado da empresa passa por aqui.
 //  • Integrações com outros sistemas (fase 2, ver README › Roteiro) entram como rotas /api/… deste Worker.
 
 interface Env {

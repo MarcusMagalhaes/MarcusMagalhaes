@@ -93,9 +93,9 @@ export default function Login({ aviso }: { aviso?: string } = {}) {
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-gradient-to-br from-grafite-900 via-grafite-800 to-grafite-700 p-4">
+    <div className="min-h-full flex flex-col items-center justify-center bg-grafite-950 bg-[radial-gradient(ellipse_at_top,#3a4046_0%,#181b1f_70%)] p-4">
+      <Logo size={230} className="mb-4" />
       <div className="card w-full max-w-sm p-6 sm:p-8 border-t-4 border-t-laranja-500">
-        <Logo size={120} slogan className="mb-4" />
         {!supabaseConfigurado && (
           <div className="my-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
             Banco não configurado. Crie o arquivo <code>.env</code> a partir de <code>.env.example</code>.
@@ -149,7 +149,7 @@ export default function Login({ aviso }: { aviso?: string } = {}) {
           </>
         )}
       </div>
-      <div className="mt-4 text-[11px] text-grafite-300">FinFlow · contas a pagar e receber, fluxo de caixa e DRE</div>
+      <div className="mt-4 text-[11px] text-grafite-300">Finanway · contas a pagar e receber, fluxo de caixa e DRE</div>
     </div>
   )
 }
@@ -168,13 +168,13 @@ export function JanelaLogin() {
   // reserva: usar o app aqui mesmo (tira a marca e recarrega; a sessão já está no armazenamento)
   const usarAqui = () => { try { sessionStorage.removeItem(CHAVE_JANELA_LOGIN) } catch { /* sem armazenamento */ } window.location.replace(window.location.origin + window.location.pathname) }
   return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-gradient-to-br from-grafite-900 via-grafite-800 to-grafite-700 p-4">
+    <div className="min-h-full flex flex-col items-center justify-center bg-grafite-950 bg-[radial-gradient(ellipse_at_top,#3a4046_0%,#181b1f_70%)] p-4">
+      <Logo size={150} className="mb-4" />
       <div className="card w-full max-w-sm p-6 text-center text-sm border-t-4 border-t-laranja-500">
-        <Logo size={80} className="mb-3" />
         {session && !erro ? (
           <>
             <div className="text-lg font-bold text-grafite-900">Login concluído ✓</div>
-            <p className="mt-2 text-slate-600">Feche esta janela para voltar ao FinFlow: o app já está conectado.</p>
+            <p className="mt-2 text-slate-600">Feche esta janela para voltar ao Finanway: o app já está conectado.</p>
             <button className="btn-primary mt-4 w-full py-3" onClick={() => window.close()}>Fechar esta janela</button>
           </>
         ) : erro ? (

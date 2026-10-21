@@ -1,16 +1,16 @@
-# Backup do banco FinFlow (7 dias, um por dia da semana)
+# Backup do banco Finanway (7 dias, um por dia da semana)
 
 Mesmo modelo do Luminexus-backup. Os arquivos desta pasta vão para um repositório **privado separado**,
-`FinFlow-backup` (assim o segredo `DB_URL`, que dá acesso total ao banco, não fica no repositório do código):
+`Finanway-backup` (assim o segredo `DB_URL`, que dá acesso total ao banco, não fica no repositório do código):
 
 ```
-FinFlow-backup/
+Finanway-backup/
   .github/workflows/backup.yml   ← backup/.github/workflows/backup.yml
   verificacoes/                  ← backup/verificacoes/ (seguranca.sql, contagem.sql, stubs-restauracao.sql)
   README.md                      ← este arquivo
 ```
 
-Sempre que `backup/verificacoes/seguranca.sql` mudar aqui, copie também para o FinFlow-backup (senão a conferência
+Sempre que `backup/verificacoes/seguranca.sql` mudar aqui, copie também para o Finanway-backup (senão a conferência
 diária acusa diferença).
 
 O GitHub Actions roda todo dia às **00:30 (Brasília)** e copia o banco como ele estava ao fim do dia anterior. O arquivo
@@ -32,9 +32,9 @@ Sempre existem os últimos 7 dias.
 
 ## Configuração (uma vez)
 
-1. Gere o par de chaves age: `age-keygen -o finflow-backup-chave-privada.txt` (guarde no cofre de senhas; a linha
+1. Gere o par de chaves age: `age-keygen -o finanway-backup-chave-privada.txt` (guarde no cofre de senhas; a linha
    `# public key: age1…` é a chave pública).
-2. Crie o repositório privado `FinFlow-backup` com os arquivos acima.
+2. Crie o repositório privado `Finanway-backup` com os arquivos acima.
 3. Segredos (Settings › Secrets and variables › Actions): `DB_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
    `SUPABASE_SERVICE_KEY`, `AGE_DESTINATARIO` (a chave pública age).
 4. Actions › "Backup diário do banco" › **Run workflow** para conferir.
@@ -42,12 +42,12 @@ Sempre existem os últimos 7 dias.
 ## Como abrir e restaurar
 
 ```bash
-age -d -i finflow-backup-chave-privada.txt -o finflow-2026-10-21.dump finflow-2026-10-21.dump.age
+age -d -i finanway-backup-chave-privada.txt -o finanway-2026-10-21.dump finanway-2026-10-21.dump.age
 # olhar numa base local (PostgreSQL 17):
-createdb finflow_bkp && psql -d finflow_bkp -f verificacoes/stubs-restauracao.sql
-pg_restore -d finflow_bkp --no-owner --no-privileges finflow-2026-10-21.dump
+createdb finanway_bkp && psql -d finanway_bkp -f verificacoes/stubs-restauracao.sql
+pg_restore -d finanway_bkp --no-owner --no-privileges finanway-2026-10-21.dump
 # voltar o Supabase inteiro ao backup (apaga o schema public de hoje):
-pg_restore --clean --if-exists --no-owner --no-privileges --schema=public -d "$DB_URL" finflow-2026-10-21.dump
+pg_restore --clean --if-exists --no-owner --no-privileges --schema=public -d "$DB_URL" finanway-2026-10-21.dump
 ```
 
 Depois de restaurar no Supabase, **reaplique `supabase/migrations/0005_rls.sql`** (o `--no-privileges` devolve as

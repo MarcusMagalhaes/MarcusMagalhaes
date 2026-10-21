@@ -65,14 +65,14 @@ export default function RelatorioMensal() {
 
   function imprimir() {
     if (!b) return
-    const bloco = (rot: string, grupos: ReturnType<typeof porRaiz>, total: number) => `<h2 style="font-size:11pt;margin:10px 0 2px;color:#34404c">${rot}</h2>
+    const bloco = (rot: string, grupos: ReturnType<typeof porRaiz>, total: number) => `<h2 style="font-size:11pt;margin:10px 0 2px;color:#24282c">${rot}</h2>
       <table class="tabela"><tbody>${grupos.map((g) => `<tr><td style="font-weight:700">${escHtml(g.raiz)}</td><td class="num" style="font-weight:700">${fmtValor(g.total)}</td></tr>${g.itens.map((p) => `<tr><td style="padding-left:16px">${fmtCodigoCurto(p.codigo)} ${escHtml(p.nome)} <span style="color:#94a3b8">(${p.qtd})</span></td><td class="num">${fmtValor(p.total)}</td></tr>`).join('')}`).join('')}
       <tr><td style="font-weight:800;border-top:2px solid #94a3b8">Total</td><td class="num" style="font-weight:800;border-top:2px solid #94a3b8">${fmtValor(total)}</td></tr></tbody></table>`
-    const contas = `<h2 style="font-size:11pt;margin:10px 0 2px;color:#34404c">Saldos por conta</h2><table class="tabela"><thead><tr><th>Conta</th><th class="num">Saldo inicial</th><th class="num">Saldo final</th></tr></thead><tbody>${b.contas.map((c) => `<tr><td>${escHtml(c.nome)}</td><td class="num">${fmtValor(c.inicial)}</td><td class="num">${fmtValor(c.final)}</td></tr>`).join('')}</tbody></table>`
+    const contas = `<h2 style="font-size:11pt;margin:10px 0 2px;color:#24282c">Saldos por conta</h2><table class="tabela"><thead><tr><th>Conta</th><th class="num">Saldo inicial</th><th class="num">Saldo final</th></tr></thead><tbody>${b.contas.map((c) => `<tr><td>${escHtml(c.nome)}</td><td class="num">${fmtValor(c.inicial)}</td><td class="num">${fmtValor(c.final)}</td></tr>`).join('')}</tbody></table>`
     imprimirHtml(titulo, `${cabecalhoImpressao(nomeDaEmpresa(empresa), titulo, `Saldo inicial ${fmtMoeda(b.saldo_inicial)} · Entradas ${fmtMoeda(b.entradas)} · Saídas ${fmtMoeda(b.saidas)} · Saldo final ${fmtMoeda(b.saldo_final)}`)}
       ${b.pendentes ? `<p style="color:#b45309;font-weight:700">Atenção: ${b.pendentes} lançamento(s) pendente(s) de classificação não entram neste relatório.</p>` : ''}
       ${bloco('Entradas', entradas, Number(b.entradas))}${bloco('Saídas', saidas, Number(b.saidas))}${contas}
-      <h2 style="font-size:11pt;margin:10px 0 2px;color:#34404c">Contas com vencimento no mês</h2><table class="tabela"><thead><tr><th></th><th class="num">Títulos</th><th class="num">Valor</th><th class="num">Quitado</th><th class="num">Em aberto</th><th class="num">Vencido</th></tr></thead><tbody>
+      <h2 style="font-size:11pt;margin:10px 0 2px;color:#24282c">Contas com vencimento no mês</h2><table class="tabela"><thead><tr><th></th><th class="num">Títulos</th><th class="num">Valor</th><th class="num">Quitado</th><th class="num">Em aberto</th><th class="num">Vencido</th></tr></thead><tbody>
       ${([['A receber', receber], ['A pagar', pagar]] as const).map(([r, x]) => `<tr><td>${r}</td><td class="num">${x.qtd}</td><td class="num">${fmtValor(x.valor)}</td><td class="num">${fmtValor(x.quitado)}</td><td class="num">${fmtValor(x.aberto)}</td><td class="num">${fmtValor(x.vencido)}</td></tr>`).join('')}</tbody></table>`)
   }
   function csv() {

@@ -1,4 +1,4 @@
--- FinFlow · 0006: implantação — plano de contas padrão (DRE gerencial), criação de empresa pelo administrador TI e
+-- Finanway · 0006: implantação — plano de contas padrão (DRE gerencial), criação de empresa pelo administrador TI e
 -- rotina diária de limpeza da auditoria (pg_cron, quando a extensão estiver ligada no Supabase).
 -- Rode depois da 0005. Pode ser executado mais de uma vez.
 
@@ -72,8 +72,8 @@ grant execute on function criar_empresa(jsonb) to authenticated;
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
-    perform cron.unschedule(jobid) from cron.job where jobname = 'finflow-limpar-auditoria';
-    perform cron.schedule('finflow-limpar-auditoria', '15 6 * * *', 'select public.limpar_auditoria()');   -- 06:15 UTC = 03:15 Brasília
+    perform cron.unschedule(jobid) from cron.job where jobname in ('finanway-limpar-auditoria', 'finflow-limpar-auditoria');   -- finflow: nome antigo do projeto
+    perform cron.schedule('finanway-limpar-auditoria', '15 6 * * *', 'select public.limpar_auditoria()');   -- 06:15 UTC = 03:15 Brasília
   else
     raise notice 'pg_cron não está ligado: a limpeza da auditoria não foi agendada (ligue a extensão e rode a 0006 de novo).';
   end if;

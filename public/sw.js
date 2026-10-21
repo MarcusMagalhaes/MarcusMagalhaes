@@ -1,9 +1,9 @@
-// FinFlow — service worker (PWA): permite instalar o app e abrir a casca sem internet.
+// Finanway — service worker (PWA): permite instalar o app e abrir a casca sem internet.
 //  • Navegação (index.html): rede primeiro (sempre a versão nova); sem rede, a última guardada.
 //  • /assets/* (nomes com hash, imutáveis): cache primeiro.
 //  • Ícones/manifesto: rede com reserva no cache.
 //  • Dados (Supabase e outras origens) nunca passam por aqui: só a mesma origem é tratada, e /api/ nunca é guardado.
-const CACHE = 'finflow-v1'
+const CACHE = 'finanway-v1'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (e) => {

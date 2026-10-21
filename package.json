@@ -1,8 +1,8 @@
 {
-  "name": "finflow",
+  "name": "finanway",
   "private": true,
   "version": "1.0.0",
-  "description": "FinFlow - Gestão Financeira Inteligente: contas a pagar e receber, fluxo de caixa, DRE, conciliação e orçamento",
+  "description": "Finanway - Gestão Financeira Inteligente: contas a pagar e receber, fluxo de caixa, DRE, conciliação e orçamento",
   "type": "module",
   "scripts": {
     "dev": "vite",

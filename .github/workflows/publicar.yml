@@ -1,9 +1,9 @@
-# Publicação do site (Worker `finflow` no Cloudflare) a cada push na `main` — mesmo modelo do Luminexus.
+# Publicação do site (Worker `finanway` no Cloudflare) a cada push na `main` — mesmo modelo do Luminexus.
 # Configuração (Settings › Secrets and variables › Actions):
 #   Variáveis (públicas: vão no pacote do site)
 #     VITE_SUPABASE_URL       https://<projeto>.supabase.co
 #     VITE_SUPABASE_ANON_KEY  chave anon do Supabase (Settings › API)
-#     SITE_URL                endereço publicado, para a conferência final (ex.: https://finflow.<conta>.workers.dev)
+#     SITE_URL                endereço publicado, para a conferência final (ex.: https://finanway.<conta>.workers.dev)
 #   Segredos
 #     CLOUDFLARE_API_TOKEN    token de API com "Workers Scripts: Edit" (modelo "Edit Cloudflare Workers")
 #     CLOUDFLARE_ACCOUNT_ID   id da conta (Workers & Pages › visão geral, coluna da direita)
@@ -75,7 +75,7 @@ jobs:
           grep -lq "$host" dist/assets/*.js || { echo "::error::Pacote sem o endereço do Supabase"; exit 1; }
           grep -lq "apps.googleusercontent.com" dist/assets/*.js || { echo "::error::Pacote sem o cliente OAuth do Google"; exit 1; }
           echo "Versão no pacote: $(cat dist/assets/*.js | grep -o "1\.[0-9]\.[0-9]\{3\}" | sort -u | tail -1)"
-      - name: Publicar (wrangler deploy --name finflow)
+      - name: Publicar (wrangler deploy --name finanway)
         if: steps.config.outputs.pronto == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
@@ -83,7 +83,7 @@ jobs:
           wranglerVersion: "4.86.0"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --name finflow
+          command: deploy --name finanway
       - name: Conferir o site publicado
         if: steps.config.outputs.pronto == 'true' && vars.SITE_URL != ''
         env:

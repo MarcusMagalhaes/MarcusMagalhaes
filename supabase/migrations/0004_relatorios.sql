@@ -1,4 +1,4 @@
--- FinFlow · 0004: views e relatórios — lançamentos e títulos com nomes, saldos, painel, fluxo de caixa (realizado +
+-- Finanway · 0004: views e relatórios — lançamentos e títulos com nomes, saldos, painel, fluxo de caixa (realizado +
 -- previsto), DRE (caixa ou competência) e extrato por conta. Views com security_invoker (respeitam o RLS de quem
 -- consulta); funções security definer filtram pela empresa em uso e conferem o papel.
 -- Rode depois da 0003. Pode ser executado mais de uma vez.

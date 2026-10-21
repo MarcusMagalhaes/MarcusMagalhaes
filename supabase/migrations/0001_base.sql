@@ -1,4 +1,4 @@
--- FinFlow — Gestão Financeira Inteligente · 0001: base do banco (Supabase / PostgreSQL)
+-- Finanway — Gestão Financeira Inteligente · 0001: base do banco (Supabase / PostgreSQL)
 -- Multi-empresa, contas de login, papéis por empresa, pré-liberação de e-mail, carimbo e auditoria completa.
 -- Mesmo padrão do Luminexus: toda proteção fica no banco (a chave anon vai no JavaScript do site e é pública).
 -- Políticas RLS, permissões e buckets em 0005_rls.sql. Ordem: 0001 → 0006 (scripts/aplicar_migracoes.py).
@@ -12,7 +12,7 @@ create or replace function normalizar(p text) returns text
 language sql immutable set search_path = public as $$ select lower(extensions.unaccent(coalesce(p, ''))) $$;
 
 -- =====================================================================
--- 1. Empresa (cada cliente do FinFlow; nenhuma lê os dados da outra)
+-- 1. Empresa (cada cliente do Finanway; nenhuma lê os dados da outra)
 -- =====================================================================
 create table if not exists empresa (
   id                   serial primary key,

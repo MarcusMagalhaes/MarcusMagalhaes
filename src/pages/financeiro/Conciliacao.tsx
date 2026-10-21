@@ -1,6 +1,6 @@
 // Conciliação bancária: importar o extrato do banco (OFX ou CSV) e tratar as linhas pendentes — conciliar com um título
 // em aberto (a linha vira a baixa; diferença a maior vira juros), classificar (conta do plano, centro, cliente/fornecedor)
-// e confirmar, ou excluir. Porte do ImportarExtrato do Luminexus (0008) com a conciliação de títulos do FinFlow (0003).
+// e confirmar, ou excluir. Porte do ImportarExtrato do Luminexus (0008) com a conciliação de títulos do Finanway (0003).
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase, ok } from '@/lib/supabase'
 import { listarCentros, listarContas, listarParceiros, listarPlano, rpc, todas, type ParceiroLista } from '@/lib/dados'

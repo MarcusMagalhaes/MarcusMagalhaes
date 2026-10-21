@@ -1,4 +1,4 @@
--- FinFlow · 0005: Row Level Security, permissões e Storage (regras de SEGURANCA.md)
+-- Finanway · 0005: Row Level Security, permissões e Storage (regras de SEGURANCA.md)
 -- Regra geral: visitante sem login (anon) não acessa nada do schema public, exceto registrar_login. Conta sem vínculo
 -- ativo com a empresa em uso não lê nada. Uma empresa nunca lê a outra: toda política filtra empresa_id pela empresa em
 -- uso, com as funções em "(select f())" (avaliadas uma vez por consulta — Luminexus 0068/0102).

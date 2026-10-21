@@ -1,4 +1,4 @@
--- FinFlow · 0002: cadastros do financeiro — contas financeiras, plano de contas (árvore), centros de custo e
+-- Finanway · 0002: cadastros do financeiro — contas financeiras, plano de contas (árvore), centros de custo e
 -- clientes/fornecedores. Toda tabela tem empresa_id (padrão = empresa em uso) e índice começando por ele.
 -- Rode depois da 0001. Pode ser executado mais de uma vez.
 

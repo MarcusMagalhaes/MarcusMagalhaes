@@ -1,4 +1,4 @@
--- O que o Supabase já tem e as migrações do FinFlow usam, para rodar tudo num PostgreSQL puro (teste local e CI).
+-- O que o Supabase já tem e as migrações do Finanway usam, para rodar tudo num PostgreSQL puro (teste local e CI).
 -- auth.uid() lê o "sub" do JWT simulado: select set_config('request.jwt.claim.sub', '<uuid>', false)
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;

@@ -1,18 +1,19 @@
 /** @type {import('tailwindcss').Config} */
-// Identidade FinFlow (21/10/2026, tirada da logo): grafite = #34404C (primária: menu ativo, títulos, botões);
-// laranja = #E65F03 (destaque: faixa do cabeçalho, setas da marca, alertas). Textos secundários em slate.
+// Identidade Finanway (21/10/2026, tirada da arte by One Way): grafite = carvão #24282C (primária: menu ativo, títulos,
+// botões; fundo da arte #181B1F) e laranja = #E97D25 (destaque: faixa do cabeçalho, setas da marca, alertas).
+// Cinza metálico do "FINAN" = grafite-500 #6A7077. Textos secundários em slate.
 export default {
   content: ['./index.html', './src/**/*.tsx'],   // só .tsx: os .ts de lib têm regex/strings que o Tailwind confunde com classes
   theme: {
     extend: {
       colors: {
         grafite: {
-          50: '#f6f7f9', 100: '#eceff2', 200: '#d6dce2', 300: '#b3bcc5', 400: '#8a96a1',
-          500: '#6f7c89', 600: '#5b6977', 700: '#4a5866', 800: '#3e4b58', 900: '#34404c',
+          50: '#f6f7f8', 100: '#eceef0', 200: '#d7dade', 300: '#b7bcc2', 400: '#8d939a',
+          500: '#6a7077', 600: '#535960', 700: '#42474d', 800: '#33373c', 900: '#24282c', 950: '#181b1f',
         },
         laranja: {
-          50: '#fff4ec', 100: '#ffe6d3', 200: '#fec9a5', 300: '#fda56c', 400: '#fb8133',
-          500: '#e65f03', 600: '#c94f02', 700: '#a53f05', 800: '#85350b', 900: '#6c2d0c',
+          50: '#fff6ee', 100: '#ffe9d5', 200: '#fdcfa8', 300: '#f9ad6d', 400: '#f2913f',
+          500: '#e97d25', 600: '#cc6514', 700: '#a74f10', 800: '#864113', 900: '#6d3713',
         },
       },
       fontFamily: { sans: ['Montserrat', 'Inter', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'] },

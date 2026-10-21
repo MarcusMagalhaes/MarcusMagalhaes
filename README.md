@@ -1,4 +1,6 @@
-# FinFlow — Gestão Financeira Inteligente
+# Finanway — Gestão Financeira Inteligente
+
+*by One Way* · antes chamado FinFlow
 
 Sistema web de **gestão financeira completa para empresas** (comércio, serviços, indústria, igrejas e terceiro setor):
 contas a pagar e a receber, lançamentos, conciliação bancária por extrato (OFX/CSV), fluxo de caixa realizado e previsto,
@@ -48,7 +50,7 @@ src/components/        Layout (menu por papel), ui (modal, toast, overlay…), P
                        ComboParceiro, OpcoesPlano, NovoPlanoConta, Logo
 src/pages/             Painel · financeiro/ · relatorios/ · cadastros/ · admin/ · Login · EscolherEmpresa
 scripts/               banco-local/ (testes do banco), aplicar_migracoes.py, conferir_seguranca.py, identidade.py, versao.mjs
-backup/                backup diário criptografado (vai para o repositório privado FinFlow-backup)
+backup/                backup diário criptografado (vai para o repositório privado Finanway-backup)
 worker/index.ts        Worker do Cloudflare (site + relatórios da CSP)
 docs/identidade/       arte original da marca
 ```
@@ -82,14 +84,14 @@ Node 22 (`.nvmrc`).
 ## 3. Publicar (Cloudflare Workers)
 
 Cada push na `main` publica pelo GitHub Actions (`.github/workflows/publicar.yml`: typecheck, testes, build,
-`wrangler deploy --name finflow`, conferência do site). Configure em Settings › Secrets and variables › Actions:
+`wrangler deploy --name finanway`, conferência do site). Configure em Settings › Secrets and variables › Actions:
 
 - **Variáveis:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (públicas: vão no pacote do site), `SITE_URL`.
 - **Segredos:** `CLOUDFLARE_API_TOKEN` ("Edit Cloudflare Workers"), `CLOUDFLARE_ACCOUNT_ID`, `VITE_GOOGLE_CLIENT_ID`.
 
 Sem a configuração o job só avisa. Todo push e pull request roda `verificar.yml` (front + banco num PostgreSQL 17 limpo).
 **Mesclar na `main` = publicar:** só com a migração correspondente já aplicada no banco. Antes do commit: `npm run versao`
-(o número aparece ao lado de Sair). Reserva manual: `npm run build` · `npx wrangler deploy --name finflow`.
+(o número aparece ao lado de Sair). Reserva manual: `npm run build` · `npx wrangler deploy --name finanway`.
 
 ## 4. Backup
 

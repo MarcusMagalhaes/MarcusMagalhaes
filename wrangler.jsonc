@@ -1,9 +1,9 @@
 // Cloudflare Workers: serve o site estático (dist/) e recebe os relatórios da CSP. Não há API própria: o navegador fala
 // direto com o Supabase, e toda a segurança fica no banco (SEGURANCA.md).
-// Publicação: GitHub Actions (.github/workflows/publicar.yml) a cada push na main — `wrangler deploy --name finflow`.
+// Publicação: GitHub Actions (.github/workflows/publicar.yml) a cada push na main — `wrangler deploy --name finanway`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "finflow",
+  "name": "finanway",
   "compatibility_date": "2026-10-01",
   "main": "worker/index.ts",
   "build": { "command": "npm run build" },
@@ -14,7 +14,7 @@
     "run_worker_first": ["/api/*"]
   },
   "keep_vars": true,
-  // mantém https://finflow.<conta>.workers.dev funcionando; o domínio próprio entra em "routes" quando existir:
-  //   "routes": [{ "pattern": "finflow.com.br", "custom_domain": true }, { "pattern": "www.finflow.com.br", "custom_domain": true }]
+  // mantém https://finanway.<conta>.workers.dev funcionando; o domínio próprio entra em "routes" quando existir:
+  //   "routes": [{ "pattern": "finanway.com.br", "custom_domain": true }, { "pattern": "www.finanway.com.br", "custom_domain": true }]
   "workers_dev": true
 }

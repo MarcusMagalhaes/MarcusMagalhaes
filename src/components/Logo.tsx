@@ -1,5 +1,6 @@
-// Identidade FinFlow: public/logo.png (símbolo + FINFLOW) e marca.png (só o símbolo), gerados por scripts/identidade.py a
-// partir de docs/identidade/finflow-original.jpg. O slogan vai em texto (na arte original ele saiu cortado).
+// Identidade Finanway (by One Way): public/logo.png (símbolo + FINAN WAY + slogan + "by ONE WAY") e marca.png (só o
+// símbolo), gerados por scripts/identidade.py a partir de docs/identidade/finanway-original.jpg. logo.png tem fundo
+// transparente, mas o desenho foi feito para fundo carvão: a logo completa vai sempre sobre fundo escuro (bg-grafite-950).
 import { useEffect, useState } from 'react'
 import { urlImagem } from '@/lib/arquivos'
 
@@ -7,14 +8,13 @@ const base = import.meta.env.BASE_URL
 export const SLOGAN = 'Gestão Financeira Inteligente'
 
 export function LogoMark({ size = 40 }: { size?: number }) {
-  return <img src={`${base}marca.png`} width={size} height={size} alt="FinFlow" style={{ width: size, height: size }} draggable={false} />
+  return <img src={`${base}marca.png`} width={size} height={size} alt="Finanway" className="rounded" style={{ width: size, height: size }} draggable={false} />
 }
 
-export default function Logo({ size = 40, className = '', slogan = false }: { size?: number; className?: string; slogan?: boolean }) {
+export default function Logo({ size = 40, className = '' }: { size?: number; className?: string }) {
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <img src={`${base}logo.png`} alt="FinFlow" draggable={false} style={{ height: size, width: 'auto' }} />
-      {slogan && <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-grafite-700">{SLOGAN}</div>}
+    <div className={`flex justify-center ${className}`}>
+      <img src={`${base}logo.png`} alt={`Finanway — ${SLOGAN} — by One Way`} draggable={false} style={{ height: size, width: 'auto' }} />
     </div>
   )
 }

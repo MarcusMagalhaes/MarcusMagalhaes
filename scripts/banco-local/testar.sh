@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Testa o banco do FinFlow num PostgreSQL limpo: stubs do Supabase → migrações (duas vezes: precisam ser reexecutáveis)
+# Testa o banco do Finanway num PostgreSQL limpo: stubs do Supabase → migrações (duas vezes: precisam ser reexecutáveis)
 # → testes de regras e permissões (testes.sql) → conferência de segurança (backup/verificacoes/seguranca.sql).
 #   npm run banco:testar
 # Sem PGHOST: cria um cluster temporário em .banco-local/ (precisa do PostgreSQL instalado; como root, roda com o
-# usuário postgres). Com PGHOST/PGUSER/PGPASSWORD (CI): usa o servidor indicado e cria o banco finflow_teste.
+# usuário postgres). Com PGHOST/PGUSER/PGPASSWORD (CI): usa o servidor indicado e cria o banco finanway_teste.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
-BANCO=finflow_teste
+BANCO=finanway_teste
 PARAR=""
 
 if [ -z "${PGHOST:-}" ]; then

@@ -10,9 +10,9 @@ registrarPwa()
 // aberto não acha a tela pedida — recarrega uma vez para pegar a versão nova (sem laço: no máximo 1 vez a cada 30 s)
 window.addEventListener('vite:preloadError', (e) => {
   try {
-    const ultima = Number(sessionStorage.getItem('finflow_recarga') ?? 0)
+    const ultima = Number(sessionStorage.getItem('finanway_recarga') ?? 0)
     if (Date.now() - ultima < 30_000) return
-    sessionStorage.setItem('finflow_recarga', String(Date.now()))
+    sessionStorage.setItem('finanway_recarga', String(Date.now()))
   } catch { /* sem armazenamento: recarrega assim mesmo */ }
   e.preventDefault()
   window.location.reload()

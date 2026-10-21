@@ -1,7 +1,7 @@
-# Backup diário do banco FinFlow (7 dias, um por dia da semana) — mesmo modelo do Luminexus-backup.
-# Este arquivo é copiado para o repositório PRIVADO separado `FinFlow-backup` (pasta .github/workflows/), junto com a
+# Backup diário do banco Finanway (7 dias, um por dia da semana) — mesmo modelo do Luminexus-backup.
+# Este arquivo é copiado para o repositório PRIVADO separado `Finanway-backup` (pasta .github/workflows/), junto com a
 # pasta verificacoes/. Fica em outro repositório para o segredo DB_URL (acesso total ao banco) não morar no repositório do
-# código. Segredos do FinFlow-backup (Settings › Secrets and variables › Actions):
+# código. Segredos do Finanway-backup (Settings › Secrets and variables › Actions):
 #   DB_URL                URI do pooler do Supabase (porta 5432; senha com # vira %23)
 #   SUPABASE_URL          https://<projeto>.supabase.co
 #   SUPABASE_ANON_KEY     chave anon (ping que mantém o projeto acordado)
@@ -61,7 +61,7 @@ jobs:
         run: |
           [ -n "$AGE_DESTINATARIO" ] || { echo "::error::Falta o segredo AGE_DESTINATARIO"; exit 1; }
           mkdir -p saida
-          f="saida/finflow-${{ steps.dia.outputs.data }}.dump"
+          f="saida/finanway-${{ steps.dia.outputs.data }}.dump"
           /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --format=custom --compress=6 --no-owner --no-privileges --schema=public \
             --exclude-table-data='public.auditoria' --exclude-table-data='public.auditoria_login' --file="$f"
           /usr/lib/postgresql/17/bin/pg_restore --list "$f" | grep -c "TABLE DATA" | xargs -I{} echo "tabelas com dados: {}"
@@ -102,7 +102,7 @@ jobs:
             if curl -fsS -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" -o "arquivos/$bucket/$nome" "$url"; then total=$((total+1)); else echo "falhou: $bucket/$nome"; falhas=$((falhas+1)); fi
           done < objetos.txt
           echo "arquivos copiados: $total · falhas: $falhas"
-          a="saida/finflow-arquivos-${{ steps.dia.outputs.data }}.tar.gz"
+          a="saida/finanway-arquivos-${{ steps.dia.outputs.data }}.tar.gz"
           tar -czf "$a" -C arquivos .
           age -r "$AGE_DESTINATARIO" -o "$a.age" "$a"; rm "$a"
           [ "$falhas" -eq 0 ] || exit 1
@@ -124,7 +124,7 @@ jobs:
           B=/usr/lib/postgresql/17/bin
           LOCAL="host=localhost port=5432 user=postgres dbname=postgres"
           $B/psql "$LOCAL" -v ON_ERROR_STOP=1 -q -f verificacoes/stubs-restauracao.sql
-          $B/pg_restore -d "$LOCAL" --no-owner --no-privileges saida/finflow-*.dump 2> erros.txt || true
+          $B/pg_restore -d "$LOCAL" --no-owner --no-privileges saida/finanway-*.dump 2> erros.txt || true
           echo "avisos do pg_restore (esperados: só o que depende do Supabase):"
           grep -E "^pg_restore: error" erros.txt | grep -v "schema \"public\" already exists" | sed 's/^/  /' || echo "  nenhum"
           $B/psql "$LOCAL" -At -F'|' -f verificacoes/contagem.sql > restaurado.txt

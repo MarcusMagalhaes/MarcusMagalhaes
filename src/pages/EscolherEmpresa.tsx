@@ -14,9 +14,9 @@ export default function EscolherEmpresa() {
     try { await escolherEmpresa(id) } catch (e: any) { setErro(e.message) } finally { setOcupado(null) }
   }
   return (
-    <div className="min-h-full flex flex-col items-center justify-center bg-gradient-to-br from-grafite-900 via-grafite-800 to-grafite-700 p-4">
+    <div className="min-h-full flex flex-col items-center justify-center bg-grafite-950 bg-[radial-gradient(ellipse_at_top,#3a4046_0%,#181b1f_70%)] p-4">
+      <Logo size={150} className="mb-4" />
       <div className="card w-full max-w-md p-6 border-t-4 border-t-laranja-500">
-        <Logo size={64} className="mb-3" />
         <h1 className="text-lg font-bold text-grafite-900">Bem-vindo, {primeiroNome}!</h1>
         <p className="text-sm text-slate-600 mb-4">Em qual empresa você deseja entrar?</p>
         <div className="grid grid-cols-1 gap-2">

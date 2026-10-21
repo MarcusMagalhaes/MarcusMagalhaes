@@ -1,4 +1,4 @@
--- Testes do banco do FinFlow (rodam depois dos stubs e das migrações; scripts/banco-local/testar.sh).
+-- Testes do banco do Finanway (rodam depois dos stubs e das migrações; scripts/banco-local/testar.sh).
 -- Simula cada usuário (auth.uid() pelo JWT simulado) com o papel "authenticated" e confere regras de negócio,
 -- isolamento entre empresas e permissões por papel. Qualquer falha interrompe com erro.
 \set ON_ERROR_STOP 1
