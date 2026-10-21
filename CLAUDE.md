@@ -3,7 +3,8 @@
 **Finanway — Gestão Financeira Inteligente**: sistema financeiro completo e independente para empresas (multiempresa).
 Nasceu do módulo financeiro do Luminexus e segue o mesmo padrão: React 19 + Vite + Tailwind 3 (site estático no Cloudflare
 Workers) e Supabase (Postgres, Auth, Storage, RLS). Visão geral, papéis, implantação e publicação em `README.md`; regras de
-segurança em `SEGURANCA.md` (ler antes de mexer no banco).
+segurança em `SEGURANCA.md` (ler antes de mexer no banco); decisões, estado da implantação e pendências em
+`docs/MEMORIA.md` (ler primeiro e atualizar ao fechar uma etapa).
 
 Identidade (21/10/2026; nome antigo FinFlow, trocado para **Finanway — by One Way**; arte em
 `docs/identidade/finanway-original.jpg`, fundo carvão): carvão `grafite-900 #24282C` (primária: menu ativo, títulos,
