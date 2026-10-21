@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { limitesDoMes, mascaraMoeda, mesCurto, parsePreco, somar, somarMes, somarMeses } from './format'
+import { fmtValor, limitesDoMes, mascaraMoeda, mesCurto, parsePreco, somar, somarMes, somarMeses } from './format'
 
 describe('format', () => {
   it('lê valores digitados', () => {
@@ -13,6 +13,10 @@ describe('format', () => {
     expect(mascaraMoeda('2')).toBe('0,02')
     expect(mascaraMoeda('123456')).toBe('1.234,56')
     expect(mascaraMoeda('')).toBe('')
+  })
+  it('nunca mostra -0,00', () => {
+    expect(fmtValor(-0)).toBe('0,00')
+    expect(fmtValor(-0.001)).toBe('0,00')
   })
   it('soma em centavos', () => {
     expect(somar([0.1, 0.2])).toBe(0.3)

@@ -1,5 +1,8 @@
+/** zero com sinal (−0, −0,001 da soma com sinal da DRE) vira 0: nunca mostrar "-0,00" */
+const semMenosZero = (n: number) => (Math.abs(n) < 0.005 ? 0 : n)
+
 export const fmtMoeda = (v: number | string | null | undefined) =>
-  Number(v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  semMenosZero(Number(v ?? 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export const fmtNum = (v: number | null | undefined) => (v ?? 0).toLocaleString('pt-BR')
 
@@ -66,7 +69,7 @@ export const parsePreco = (s: string | number | null | undefined): number | null
 export const fmtValor = (v: number | string | null | undefined) => {
   if (v === null || v === undefined || v === '') return ''
   const n = typeof v === 'number' ? v : parsePreco(v)
-  return n == null ? '' : n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return n == null ? '' : semMenosZero(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 /**
  * Máscara monetária enquanto digita: os dígitos entram pelos centavos, sempre com 2 casas e milhar com ponto
