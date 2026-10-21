@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+
+@layer components {
+.input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800 shadow-sm
+         focus:border-laranja-500 focus:outline-none focus:ring-2 focus:ring-laranja-100 disabled:bg-slate-100 disabled:text-slate-500;
+}
+.btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition
+         focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 select-none;
+}
+.btn-primary { @apply btn bg-grafite-900 text-white hover:bg-grafite-700 focus:ring-grafite-300; }
+.btn-accent { @apply btn bg-laranja-500 text-white hover:bg-laranja-600 focus:ring-laranja-300; }
+.btn-secondary { @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-200; }
+.btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-300; }
+.card { @apply rounded-xl bg-white shadow-sm border border-slate-200; }
+.label { @apply block text-[10px] font-bold uppercase tracking-wide text-slate-500 mb-0.5; }
+.chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+}
+
+/* Barra de filtros fina: campos em linha, fundo amarelo nos editáveis */
+.barra { @apply card px-3 py-1.5 mb-1.5 bg-grafite-50/70 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs; }
+.barra .campo { @apply flex-row items-center gap-1.5; }
+.barra .campo > .label { @apply mb-0 whitespace-nowrap; }
+.barra .input { @apply py-1 px-2 text-xs bg-yellow-50 w-auto min-w-[120px]; }
+.barra .campo:has(input[type="text"]), .barra .campo:has(input:not([type])) { @apply flex-1 min-w-[160px]; }
+.barra .campo:has(input[type="text"]) .input, .barra .campo:has(input:not([type])) .input { @apply w-full; }
+.barra h1 { @apply text-sm font-extrabold text-grafite-900 mr-1; }
+
+/* Formulários das fichas: campos editáveis em amarelo claro */
+.ficha .input { @apply bg-yellow-50; }
+.ficha .input:disabled { @apply bg-slate-100; }
+
+/* Tabelas densas com zebra */
+.tabela { @apply w-full; font-size: 11px; }
+.tabela tbody tr:nth-child(even) > td { background-color: #eceff2; }
+.tabela thead th { @apply bg-slate-100 text-left text-[10px] uppercase text-slate-500 px-2 py-1 font-bold sticky top-0; }
+.tabela td { @apply px-2 py-0.5 border-t border-slate-200; }
+.tabela tfoot td { @apply bg-grafite-50 font-bold border-t-2 border-slate-300; }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* celular: menos respiro lateral nas tabelas e na barra de filtros (evita rolagem horizontal) */
+@media (max-width: 640px) {
+  .tabela td, .tabela thead th { @apply px-1; }
+  .barra { @apply gap-x-2 px-2; }
+  .barra .input { @apply min-w-[96px]; }
+  .barra select.input, .barra .campo .input { max-width: 62vw; }
+  .barra > * { max-width: 100%; min-width: 0; }
+  /* listas (tabelas com cabeçalho): a tabela rola sozinha para o lado e a página fica parada */
+  .tabela:has(> thead) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* linha de botões (Salvar/Cancelar/Excluir) presa no rodapé da área que rola (Luminexus 18/10) */
+  .acoes { position: sticky; bottom: 0; z-index: 10; background: #fff; margin: 0 -0.5rem; padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
+           border-top: 1px solid #e2e8f0; box-shadow: 0 -6px 12px -8px rgba(52, 64, 76, 0.35); }
+}
+/* iPhone/iPad: campo com letra menor que 16px faz o Safari dar zoom ao tocar e a página fica deslocada para o lado */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px !important; }
+}
+/* palavras muito longas (e-mail, link) quebram em vez de alargar a tela */
+body { overflow-wrap: break-word; }
+.zebra > tr:nth-child(even) > td { background-color: #eceff2; }
+
+/* Impressão */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  @page { margin: 10mm; }
+}
+
+/* Overlay de carregamento: barra que corre de um lado ao outro */
+.barra-indeterminada { animation: barra-indeterminada 1.1s ease-in-out infinite; }
+@keyframes barra-indeterminada { 0% { left: -35%; } 100% { left: 100%; } }
+@media (prefers-reduced-motion: reduce) { .barra-indeterminada { animation: none; left: 33%; } }

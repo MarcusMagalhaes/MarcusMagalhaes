@@ -1,0 +1,33 @@
+node_modules
+dist
+*.log
+.DS_Store
+.wrangler/
+
+# Segredos
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pfx
+*.p12
+*.pem
+*.key
+*.crt
+*.age
+credenciais/
+
+# Dados da empresa: planilhas, exportações e cópias do banco
+*.xlsx
+*.xls
+*.csv
+*.ofx
+*.dump
+*.backup
+*.sql.gz
+
+# banco local de teste (scripts/banco-local)
+.banco-local/
+
+__pycache__/
