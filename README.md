@@ -58,8 +58,10 @@ docs/identidade/       arte original da marca
 ## 1. Banco (Supabase)
 
 1. Crie o projeto no Supabase (região São Paulo, `sa-east-1`, de preferência).
-2. Aplique as migrações em ordem: `DB_URL="postgresql://postgres.<ref>:SENHA@aws-0-sa-east-1.pooler.supabase.com:5432/postgres" python scripts/aplicar_migracoes.py --todas`
-   (ou cole cada arquivo no SQL Editor, de 0001 a 0006).
+2. Aplique as migrações pelo GitHub Actions: crie o segredo `DB_URL` (URI do "Session pooler" do Supabase, em
+   Connect) e rode **Actions › Aplicar migrações › Run workflow** com `--todas` (depois, só os arquivos novos). O workflow
+   também confere a segurança. Alternativas: `DB_URL=… python scripts/aplicar_migracoes.py --todas` na sua máquina, ou
+   colar cada arquivo no SQL Editor, de 0001 a 0006.
 3. **Login com Google** (Authentication › Providers › Google): Client ID e Secret de um cliente OAuth do Google Cloud.
    Origens JavaScript autorizadas: o endereço do site e `http://localhost:5175`. Redirecionamento: `https://<ref>.supabase.co/auth/v1/callback`.
 4. Authentication › URL Configuration: Site URL = endereço do site; Redirect URLs `<site>/**` e `http://localhost:5175/**`.

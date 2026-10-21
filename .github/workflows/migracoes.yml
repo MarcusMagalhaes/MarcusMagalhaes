@@ -1,0 +1,53 @@
+# Aplica as migrações no banco do Supabase e confere a segurança (scripts/aplicar_migracoes.py + conferir_seguranca.py).
+# Roda só à mão: Actions › "Aplicar migrações" › Run workflow, informando os arquivos (ex.: 0007_algo.sql) ou --todas.
+# Segredo necessário (Settings › Secrets and variables › Actions): DB_URL = URI do "Session pooler" do Supabase
+#   postgresql://postgres.<ref>:<SENHA>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres
+# (caracteres especiais da senha vão codificados: # → %23, @ → %40, / → %2F). A senha nunca aparece no log.
+# Toda migração pode rodar duas vezes; cada arquivo vai numa transação e o processo para no primeiro erro.
+name: Aplicar migrações
+
+on:
+  workflow_dispatch:
+    inputs:
+      arquivos:
+        description: "Arquivos de supabase/migrations separados por espaço, ou --todas"
+        required: true
+        default: "--todas"
+
+concurrency:
+  group: migracoes
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir o segredo DB_URL
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          [ -n "$DB_URL" ] || { echo "::error::Falta o segredo DB_URL (Settings › Secrets and variables › Actions)"; exit 1; }
+          echo "$DB_URL" | grep -q "pooler.supabase.com" || echo "::warning::DB_URL não parece ser o Session pooler do Supabase"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet psycopg2-binary
+      - name: Aplicar
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          ARQUIVOS: ${{ github.event.inputs.arquivos }}
+        run: |
+          # só nomes de arquivo de migração ou --todas (o texto vem de quem dispara o workflow)
+          for a in $ARQUIVOS; do
+            [[ "$a" == "--todas" || "$a" =~ ^[0-9]{4}_[a-z0-9_]+\.sql$ ]] || { echo "::error::Nome inválido: $a"; exit 1; }
+          done
+          python scripts/aplicar_migracoes.py $ARQUIVOS
+      - name: Conferir a segurança do banco
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: python scripts/conferir_seguranca.py
