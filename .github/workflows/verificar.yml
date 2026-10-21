@@ -1,0 +1,51 @@
+# Verificação de cada push e pull request: front (tipos, testes, build) e banco (migrações num PostgreSQL limpo, testes de
+# regras e de permissões por papel/empresa, conferência de segurança). O mesmo que `npm run typecheck && npm test &&
+# npm run banco:testar` na máquina.
+name: Verificar
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  front:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-fund --no-audit
+      - run: npm run typecheck
+      - run: npm test
+      - name: "Build (com endereço de exemplo: só confere que compila)"
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://exemplo.supabase.co
+          VITE_SUPABASE_ANON_KEY: exemplo
+
+  banco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: teste
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrações (2 vezes), testes de regras e permissões, conferência de segurança
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: teste
+        run: bash scripts/banco-local/testar.sh

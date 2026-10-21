@@ -1,0 +1,143 @@
+# Backup diário do banco FinFlow (7 dias, um por dia da semana) — mesmo modelo do Luminexus-backup.
+# Este arquivo é copiado para o repositório PRIVADO separado `FinFlow-backup` (pasta .github/workflows/), junto com a
+# pasta verificacoes/. Fica em outro repositório para o segredo DB_URL (acesso total ao banco) não morar no repositório do
+# código. Segredos do FinFlow-backup (Settings › Secrets and variables › Actions):
+#   DB_URL                URI do pooler do Supabase (porta 5432; senha com # vira %23)
+#   SUPABASE_URL          https://<projeto>.supabase.co
+#   SUPABASE_ANON_KEY     chave anon (ping que mantém o projeto acordado)
+#   SUPABASE_SERVICE_KEY  chave service_role (cópia dos arquivos do Storage; secreta)
+#   AGE_DESTINATARIO      chave PÚBLICA age (age1…); a privada fica fora do GitHub, no cofre de senhas
+name: Backup diário do banco (7 dias, por dia da semana)
+
+on:
+  schedule:
+    - cron: "30 3 * * *"   # 00:30 em Brasília (UTC-3) todos os dias
+  workflow_dispatch:
+
+permissions:
+  actions: write            # para apagar o backup antigo do mesmo dia da semana
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      # banco vazio só para o teste de restauração (some ao fim do job)
+      pg:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: teste
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      AGE_DESTINATARIO: ${{ secrets.AGE_DESTINATARIO }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Manter o projeto Supabase ativo (o plano gratuito pausa após 7 dias sem uso da API)
+        run: |
+          curl -fsS -o /dev/null -w "API do Supabase respondeu %{http_code}\n" "${{ secrets.SUPABASE_URL }}/auth/v1/health" -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}"
+
+      - name: Instalar cliente PostgreSQL 17 (mesma versão do Supabase) e age
+        run: |
+          sudo apt-get install -y postgresql-common >/dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y >/dev/null
+          sudo apt-get install -y postgresql-client-17 age >/dev/null
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      - name: Nome do backup = dia da semana da base copiada (dia anterior, horário de Brasília)
+        id: dia
+        run: |
+          n=$(TZ=America/Sao_Paulo date -d "yesterday" +%u)
+          nomes=(x segunda terca quarta quinta sexta sabado domingo)
+          echo "nome=backup-$n-${nomes[$n]}" >> "$GITHUB_OUTPUT"
+          echo "data=$(TZ=America/Sao_Paulo date -d yesterday +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: pg_dump (schema public, sem os dados de auditoria) criptografado com age
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          [ -n "$AGE_DESTINATARIO" ] || { echo "::error::Falta o segredo AGE_DESTINATARIO"; exit 1; }
+          mkdir -p saida
+          f="saida/finflow-${{ steps.dia.outputs.data }}.dump"
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --format=custom --compress=6 --no-owner --no-privileges --schema=public \
+            --exclude-table-data='public.auditoria' --exclude-table-data='public.auditoria_login' --file="$f"
+          /usr/lib/postgresql/17/bin/pg_restore --list "$f" | grep -c "TABLE DATA" | xargs -I{} echo "tabelas com dados: {}"
+          age -r "$AGE_DESTINATARIO" -o "$f.age" "$f"
+          ls -la saida
+
+      - name: Apagar o backup anterior deste mesmo dia da semana
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in "${{ steps.dia.outputs.nome }}" "arquivos-${{ steps.dia.outputs.nome }}"; do
+            gh api "repos/${{ github.repository }}/actions/artifacts?name=$n&per_page=50" --jq '.artifacts[].id' | while read id; do
+              echo "apagando artefato $id ($n)"; gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id"; done
+          done
+
+      - name: Guardar o backup (fica 8 dias; é substituído na próxima semana)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dia.outputs.nome }}
+          path: saida/*.dump.age
+          retention-days: 8
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Copiar os arquivos do Storage (documentos e logos) — buckets privados, com a chave service_role
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          mkdir -p arquivos
+          /usr/lib/postgresql/17/bin/psql "$DB_URL" -At -F'|' -c "select bucket_id, name from storage.objects where name not like '%/' order by 1, 2" > objetos.txt
+          total=0; falhas=0
+          while IFS='|' read -r bucket nome; do
+            [ -z "$nome" ] && continue
+            mkdir -p "arquivos/$bucket/$(dirname "$nome")"
+            url="$SUPABASE_URL/storage/v1/object/$bucket/$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))' "$nome")"
+            if curl -fsS -H "apikey: $SERVICE_KEY" -H "Authorization: Bearer $SERVICE_KEY" -o "arquivos/$bucket/$nome" "$url"; then total=$((total+1)); else echo "falhou: $bucket/$nome"; falhas=$((falhas+1)); fi
+          done < objetos.txt
+          echo "arquivos copiados: $total · falhas: $falhas"
+          a="saida/finflow-arquivos-${{ steps.dia.outputs.data }}.tar.gz"
+          tar -czf "$a" -C arquivos .
+          age -r "$AGE_DESTINATARIO" -o "$a.age" "$a"; rm "$a"
+          [ "$falhas" -eq 0 ] || exit 1
+
+      - name: Guardar a cópia dos arquivos (mesma regra, 8 dias, por dia da semana)
+        uses: actions/upload-artifact@v4
+        with:
+          name: arquivos-${{ steps.dia.outputs.nome }}
+          path: saida/*.tar.gz.age
+          retention-days: 8
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Testar a restauração do backup num banco vazio e comparar as linhas com o Supabase
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          PGPASSWORD: teste
+        run: |
+          B=/usr/lib/postgresql/17/bin
+          LOCAL="host=localhost port=5432 user=postgres dbname=postgres"
+          $B/psql "$LOCAL" -v ON_ERROR_STOP=1 -q -f verificacoes/stubs-restauracao.sql
+          $B/pg_restore -d "$LOCAL" --no-owner --no-privileges saida/finflow-*.dump 2> erros.txt || true
+          echo "avisos do pg_restore (esperados: só o que depende do Supabase):"
+          grep -E "^pg_restore: error" erros.txt | grep -v "schema \"public\" already exists" | sed 's/^/  /' || echo "  nenhum"
+          $B/psql "$LOCAL" -At -F'|' -f verificacoes/contagem.sql > restaurado.txt
+          $B/psql "$DB_URL" -At -F'|' -f verificacoes/contagem.sql > supabase.txt
+          join -t'|' -a1 -e0 -o 0,1.2,2.2 supabase.txt restaurado.txt | awk -F'|' '
+            { printf "  %-28s Supabase %8d   restaurado %8d\n", $1, $2, $3
+              if ($2 > 0 && $3 < $2 * 0.9) { ruim++; print "  ^ restaurou menos de 90% das linhas" } }
+            END { if (ruim) { print "FALHA: a restauração perdeu dados"; exit 1 } print "Restauração OK" }'
+
+      - name: Conferir a segurança do banco (RLS, views, acesso do visitante sem login, isolamento entre empresas)
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/psql "$DB_URL" -At -F' : ' -f verificacoes/seguranca.sql > problemas.txt
+          if [ -s problemas.txt ]; then echo "FALHA: problemas de segurança no banco:"; sed 's/^/  /' problemas.txt; exit 1; fi
+          echo "Segurança OK"

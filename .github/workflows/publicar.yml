@@ -1,0 +1,98 @@
+# Publicação do site (Worker `finflow` no Cloudflare) a cada push na `main` — mesmo modelo do Luminexus.
+# Configuração (Settings › Secrets and variables › Actions):
+#   Variáveis (públicas: vão no pacote do site)
+#     VITE_SUPABASE_URL       https://<projeto>.supabase.co
+#     VITE_SUPABASE_ANON_KEY  chave anon do Supabase (Settings › API)
+#     SITE_URL                endereço publicado, para a conferência final (ex.: https://finflow.<conta>.workers.dev)
+#   Segredos
+#     CLOUDFLARE_API_TOKEN    token de API com "Workers Scripts: Edit" (modelo "Edit Cloudflare Workers")
+#     CLOUDFLARE_ACCOUNT_ID   id da conta (Workers & Pages › visão geral, coluna da direita)
+#     VITE_GOOGLE_CLIENT_ID   cliente OAuth do Google (o mesmo do provedor Google no Supabase)
+# Sem a configuração, o job avisa e não publica (não falha). Mesclar na `main` = publicar: só com a migração correspondente
+# já aplicada no banco (scripts/aplicar_migracoes.py).
+name: Publicar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+    steps:
+      - name: Conferir a configuração
+        id: config
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CONTA: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          faltam=""
+          [ -z "$TOKEN" ] && faltam="$faltam CLOUDFLARE_API_TOKEN(segredo)"
+          [ -z "$CONTA" ] && faltam="$faltam CLOUDFLARE_ACCOUNT_ID(segredo)"
+          [ -z "$VITE_GOOGLE_CLIENT_ID" ] && faltam="$faltam VITE_GOOGLE_CLIENT_ID(segredo)"
+          [ -z "$VITE_SUPABASE_URL" ] && faltam="$faltam VITE_SUPABASE_URL(variável)"
+          [ -z "$VITE_SUPABASE_ANON_KEY" ] && faltam="$faltam VITE_SUPABASE_ANON_KEY(variável)"
+          if [ -n "$faltam" ]; then
+            echo "::warning::Publicação não configurada. Faltam:$faltam (Settings › Secrets and variables › Actions). Nada foi publicado."
+            echo "pronto=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "pronto=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.pronto == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.config.outputs.pronto == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.config.outputs.pronto == 'true'
+        run: npm ci --no-fund --no-audit
+      - if: steps.config.outputs.pronto == 'true'
+        run: npm run typecheck
+      - if: steps.config.outputs.pronto == 'true'
+        run: npm test
+      - name: Build
+        if: steps.config.outputs.pronto == 'true'
+        run: npm run build
+      - name: Conferir o pacote
+        if: steps.config.outputs.pronto == 'true'
+        run: |
+          # as telas carregam sob demanda e o Vite separa módulos: a configuração pode estar em qualquer arquivo do pacote
+          host="$(echo "$VITE_SUPABASE_URL" | sed -E 's#https?://##; s#/.*##')"
+          grep -lq "$host" dist/assets/*.js || { echo "::error::Pacote sem o endereço do Supabase"; exit 1; }
+          grep -lq "apps.googleusercontent.com" dist/assets/*.js || { echo "::error::Pacote sem o cliente OAuth do Google"; exit 1; }
+          echo "Versão no pacote: $(cat dist/assets/*.js | grep -o "1\.[0-9]\.[0-9]\{3\}" | sort -u | tail -1)"
+      - name: Publicar (wrangler deploy --name finflow)
+        if: steps.config.outputs.pronto == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          # a action instala por padrão um wrangler antigo que não lê wrangler.jsonc (Luminexus, 19/10)
+          wranglerVersion: "4.86.0"
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --name finflow
+      - name: Conferir o site publicado
+        if: steps.config.outputs.pronto == 'true' && vars.SITE_URL != ''
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          local=$(basename "$(ls dist/assets/index-*.js | head -1)")
+          for i in 1 2 3 4 5 6; do
+            remoto=$(curl -s "$SITE_URL/" | grep -o 'assets/index-[^"]*' | head -1 | sed 's#assets/##')
+            [ "$remoto" = "$local" ] && { echo "No ar: $remoto"; exit 0; }
+            sleep 10
+          done
+          echo "::error::O site ainda serve $remoto, e o build gerou $local"; exit 1
