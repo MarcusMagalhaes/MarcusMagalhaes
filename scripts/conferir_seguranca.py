@@ -4,14 +4,10 @@
 # administrador TI só com login Google e buckets privados. Mostra também as políticas por tabela.
 #   python scripts/conferir_seguranca.py      (conexão: DB_URL ou credenciais/db-url.txt, como aplicar_migracoes.py)
 import os, sys
-import psycopg2
 sys.stdout.reconfigure(encoding="utf-8")
+from conexao import RAIZ, conectar
 
-RAIZ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-url = os.environ.get("DB_URL") or (open(os.path.join(RAIZ, "credenciais", "db-url.txt"), encoding="utf-8").read().strip()
-                                   if os.path.exists(os.path.join(RAIZ, "credenciais", "db-url.txt")) else None)
-if not url: sys.exit("Defina DB_URL ou crie credenciais/db-url.txt")
-con = psycopg2.connect(url, sslmode="require")
+con = conectar()
 cur = con.cursor()
 cur.execute("select tablename, count(*) from pg_policies where schemaname='public' group by 1 order by 1")
 print("políticas por tabela:", ", ".join(f"{t} ({n})" for t, n in cur.fetchall()))

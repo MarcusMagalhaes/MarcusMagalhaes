@@ -4,23 +4,16 @@
 # Conexão: variável DB_URL (postgresql://postgres.<ref>:SENHA@aws-0-<região>.pooler.supabase.com:5432/postgres) ou o
 # arquivo credenciais/db-url.txt (fora do git). Antes de aplicar na produção, rode `npm run banco:testar`.
 import os, re, sys
-import psycopg2
 sys.stdout.reconfigure(encoding="utf-8")
+from conexao import RAIZ, conectar
 
-RAIZ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 PASTA = os.path.join(RAIZ, "supabase", "migrations")
-
-def url_do_banco():
-    if os.environ.get("DB_URL"): return os.environ["DB_URL"]
-    arq = os.path.join(RAIZ, "credenciais", "db-url.txt")
-    if os.path.exists(arq): return open(arq, encoding="utf-8").read().strip()
-    sys.exit("Defina DB_URL ou crie credenciais/db-url.txt")
 
 nomes = sys.argv[1:]
 if nomes == ["--todas"]: nomes = sorted(f for f in os.listdir(PASTA) if f.endswith(".sql"))
 if not nomes: sys.exit("uso: python scripts/aplicar_migracoes.py <arquivo.sql> … | --todas")
 
-con = psycopg2.connect(url_do_banco(), sslmode="require")
+con = conectar()
 con.autocommit = False
 for nome in nomes:
     sql = open(os.path.join(PASTA, nome), encoding="utf-8").read()
