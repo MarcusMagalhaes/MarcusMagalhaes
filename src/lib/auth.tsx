@@ -62,6 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const emp = await empresasP
     if (emp.erro) { setErro(emp.erro); setUsuario(null); return }
     const lista = emp.lista
+    // TI sem nenhuma empresa no banco (primeiro acesso): entra para criar a primeira (tela EscolherEmpresa)
+    if (!lista.length && data.papel === 'ADMIN_TI') {
+      setErro(null); idCarregado.current = s.user.id
+      setUsuario(data as Usuario); setEmpresas([]); aplicarEmpresa(null)
+      return
+    }
     if (!lista.length) {
       setErro(`Olá, ${data.nome}. Sua conta ainda não tem acesso a nenhuma empresa. Peça ao administrador da empresa para liberar o seu e-mail Google (${data.email}).`)
       setUsuario(null); registrarLogin(s.user.email, 'LOGIN_FALHA', 'sem vínculo com empresa', metodoSessao(s)); return

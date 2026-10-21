@@ -3,7 +3,7 @@
 #   Variáveis (públicas: vão no pacote do site)
 #     VITE_SUPABASE_URL       https://<projeto>.supabase.co
 #     VITE_SUPABASE_ANON_KEY  chave anon do Supabase (Settings › API)
-#     SITE_URL                endereço publicado, para a conferência final (ex.: https://finanway.<conta>.workers.dev)
+#     SITE_URL                endereço publicado, para a conferência final (https://finanway.com.br)
 #   Segredos
 #     CLOUDFLARE_API_TOKEN    token de API com "Workers Scripts: Edit" (modelo "Edit Cloudflare Workers")
 #     CLOUDFLARE_ACCOUNT_ID   id da conta (Workers & Pages › visão geral, coluna da direita)

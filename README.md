@@ -63,8 +63,8 @@ docs/identidade/       arte original da marca
    também confere a segurança. Alternativas: `DB_URL=… python scripts/aplicar_migracoes.py --todas` na sua máquina, ou
    colar cada arquivo no SQL Editor, de 0001 a 0006.
 3. **Login com Google** (Authentication › Providers › Google): Client ID e Secret de um cliente OAuth do Google Cloud.
-   Origens JavaScript autorizadas: o endereço do site e `http://localhost:5175`. Redirecionamento: `https://<ref>.supabase.co/auth/v1/callback`.
-4. Authentication › URL Configuration: Site URL = endereço do site; Redirect URLs `<site>/**` e `http://localhost:5175/**`.
+   Origens JavaScript autorizadas: `https://finanway.com.br` e `http://localhost:5175`. Redirecionamento: `https://<ref>.supabase.co/auth/v1/callback`.
+4. Authentication › URL Configuration: Site URL = `https://finanway.com.br`; Redirect URLs `https://finanway.com.br/**` e `http://localhost:5175/**`.
 5. Database › Extensions: ligue **pg_cron** e rode a `0006_implantacao.sql` de novo (agenda a limpeza da auditoria).
 6. Entre no site com onewayinf@gmail.com pelo Google: nasce ADMIN_TI. Em **Administração › Empresas › + Nova empresa**
    cadastre a primeira empresa (já vem com o plano de contas padrão, Caixa, Conta corrente e o centro "Geral") e informe o

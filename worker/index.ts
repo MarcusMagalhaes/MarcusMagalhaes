@@ -1,4 +1,5 @@
 // Finanway — Worker do Cloudflare: serve o site (assets) e registra as violações da CSP.
+//  • www.<domínio> redireciona para o domínio principal.
 //  • /api/csp (POST): o navegador manda o relatório quando a Content-Security-Policy bloqueia algo; vai para o log do
 //    Worker (npx wrangler tail finanway). Nada de dado da empresa passa por aqui.
 //  • Integrações com outros sistemas (fase 2, ver README › Roteiro) entram como rotas /api/… deste Worker.
@@ -10,6 +11,11 @@ interface Env {
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url)
+    // um só endereço (o login do Google e o Supabase conferem a origem): www.finanway.com.br → finanway.com.br
+    if (url.hostname.startsWith('www.')) {
+      url.hostname = url.hostname.slice(4)
+      return Response.redirect(url.toString(), 301)
+    }
     if (url.pathname === '/api/csp' && req.method === 'POST') {
       try {
         const corpo = (await req.text()).slice(0, 4000)
